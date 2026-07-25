@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: theme("colors.cream");
+  color: theme("colors.ink");
+  -webkit-font-smoothing: antialiased;
+}
