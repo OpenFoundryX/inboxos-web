@@ -1,0 +1,38 @@
+import Link from "next/link";
+import Button from "@/components/ui/Button";
+
+const LINKS = [
+  { href: "#how", label: "How it works" },
+  { href: "#pricing", label: "Pricing" },
+];
+
+export default function Navbar() {
+  return (
+    <header className="sticky top-0 z-50 bg-cream/80 backdrop-blur">
+      <nav className="mx-auto flex max-w-6xl items-center justify-between rounded-full border border-black/5 bg-card px-5 py-3 shadow-sm mt-4">
+        <Link href="/" className="text-xl font-extrabold tracking-tight text-accent">
+          InboxOS
+        </Link>
+        <div className="hidden items-center gap-7 md:flex">
+          {LINKS.map((l) => (
+            <Link
+              key={l.label}
+              href={l.href}
+              className="text-sm font-medium text-ink/80 hover:text-ink"
+            >
+              {l.label}
+            </Link>
+          ))}
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" href="/login">
+            Log in
+          </Button>
+          <Button variant="primary" href="/login">
+            Start for free
+          </Button>
+        </div>
+      </nav>
+    </header>
+  );
+}
