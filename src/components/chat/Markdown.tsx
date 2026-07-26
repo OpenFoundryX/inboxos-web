@@ -9,7 +9,9 @@
 
 const INLINE = /(\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\))/g;
 
-function safeHref(url: string): string | null {
+// Known limitation: a link nested inside bold (**see [this](url)**) is consumed by the bold match and not parsed as an anchor.
+
+export function safeHref(url: string): string | null {
   try {
     const parsed = new URL(url, "https://example.invalid");
     return parsed.protocol === "http:" || parsed.protocol === "https:" ? url : null;

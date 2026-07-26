@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ChevronDownIcon, PaperclipIcon } from "@/components/app/icons";
+import { safeHref } from "@/components/chat/Markdown";
 import type { ChatSource } from "@/lib/chat";
 
 function formatDate(iso: string | null): string {
@@ -33,14 +34,10 @@ export default function SourceList({ sources }: { sources: ChatSource[] }) {
       </button>
       {open ? (
         <ul className="mt-2 space-y-1.5">
-          {sources.map((s, i) => (
-            <li key={s.ref_id ?? i} className="text-xs">
-              <a
-                href={s.link ?? "#"}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block rounded-lg px-2 py-1.5 hover:bg-cream"
-              >
+          {sources.map((s, i) => {
+            const href = safeHref(s.link ?? "");
+            const content = (
+              <>
                 <span className="flex items-center gap-1.5 font-medium text-ink">
                   {s.title || "(no subject)"}
                   {s.attachment_count > 0 ? (
@@ -51,9 +48,27 @@ export default function SourceList({ sources }: { sources: ChatSource[] }) {
                   {s.sender}
                   {formatDate(s.date) ? ` · ${formatDate(s.date)}` : ""}
                 </span>
-              </a>
-            </li>
-          ))}
+              </>
+            );
+            return (
+              <li key={`${s.ref_id ?? "src"}-${i}`} className="text-xs">
+                {href ? (
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block rounded-lg px-2 py-1.5 hover:bg-cream"
+                  >
+                    {content}
+                  </a>
+                ) : (
+                  <div className="block rounded-lg px-2 py-1.5">
+                    {content}
+                  </div>
+                )}
+              </li>
+            );
+          })}
         </ul>
       ) : null}
     </div>
