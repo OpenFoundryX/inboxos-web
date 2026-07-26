@@ -140,23 +140,66 @@ export default function ChatPage() {
             setStreamedText(answer);
           },
           onSources: (s) => setStreamedSources(s),
-          onError: (m) => setError(m),
+          onError: (m) => {
+            // A stale error from a turn the user already navigated away from
+            // (via startNew/openConversation aborting this controller) must
+            // not touch state that now belongs to a different conversation.
+            if (controller.signal.aborted) return;
+            setStreaming(false);
+            setStage(null);
+            setStreamedText("");
+            setStreamedSources([]);
+            const cid = conversationId;
+            if (!cid) {
+              setError(m);
+              return;
+            }
+            // The backend commits the user turn before streaming, and on a
+            // mid-stream failure persists whatever partial assistant reply
+            // it produced — reload so the optimistic bubble is reconciled
+            // against that instead of just showing an error over nothing.
+            void (async () => {
+              try {
+                const detail = await getConversation(cid);
+                if (controller.signal.aborted) return;
+                setMessages(detail.messages);
+              } catch {
+                // Best effort — the error message below still gets shown.
+              } finally {
+                if (!controller.signal.aborted) setError(m);
+              }
+            })();
+          },
           onDone: async () => {
+            // Same guard as onError: this turn may have been aborted (new
+            // chat / conversation switch) while `done` was already in
+            // flight. Applying its reload now would clobber whatever the
+            // user has since switched to.
+            if (controller.signal.aborted) return;
             setStreaming(false);
             setStage(null);
             setStreamedText("");
             setStreamedSources([]);
             // Reload the authoritative transcript: it carries real message ids
             // (needed to confirm actions) and the persisted assistant turn.
-            if (conversationId) {
+            const cid = conversationId;
+            if (cid) {
               try {
-                const detail = await getConversation(conversationId);
+                const detail = await getConversation(cid);
+                // Re-check after the await: the abort could have happened
+                // while this request was in flight, which is the case that
+                // actually matters (a check only before the await misses it).
+                if (controller.signal.aborted) return;
                 setMessages(detail.messages);
               } catch {
-                setError("Answer saved, but the transcript couldn't be reloaded.");
+                if (!controller.signal.aborted) {
+                  setError("Answer saved, but the transcript couldn't be reloaded.");
+                }
               }
             }
-            void refreshConversations();
+            if (!controller.signal.aborted) {
+              void refreshConversations();
+            }
           },
         },
         controller.signal,
