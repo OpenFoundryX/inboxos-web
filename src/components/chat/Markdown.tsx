@@ -20,6 +20,15 @@ export function safeHref(url: string): string | null {
   }
 }
 
+export function safeExternalHref(url: string): string | null {
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === "http:" || parsed.protocol === "https:" ? url : null;
+  } catch {
+    return null;
+  }
+}
+
 function inline(text: string, keyPrefix: string) {
   return text.split(INLINE).map((part, i) => {
     const key = `${keyPrefix}-${i}`;

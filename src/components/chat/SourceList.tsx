@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ChevronDownIcon, PaperclipIcon } from "@/components/app/icons";
-import { safeHref } from "@/components/chat/Markdown";
+import { safeExternalHref } from "@/components/chat/Markdown";
 import type { ChatSource } from "@/lib/chat";
 
 function formatDate(iso: string | null): string {
@@ -35,7 +35,7 @@ export default function SourceList({ sources }: { sources: ChatSource[] }) {
       {open ? (
         <ul className="mt-2 space-y-1.5">
           {sources.map((s, i) => {
-            const href = s.link ? safeHref(s.link) : null;
+            const href = s.link ? safeExternalHref(s.link) : null;
             const content = (
               <>
                 <span className="flex items-center gap-1.5 font-medium text-ink">
