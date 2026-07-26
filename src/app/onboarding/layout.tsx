@@ -33,7 +33,11 @@ export default function OnboardingLayout({ children }: { children: React.ReactNo
     );
   }
 
-  if (pathname.startsWith("/onboarding/creating")) {
+  // The "creating" and real "connect" screens render full-bleed (no stepper).
+  if (
+    pathname.startsWith("/onboarding/creating") ||
+    pathname.startsWith("/onboarding/connect")
+  ) {
     return <div className="min-h-screen bg-cream">{children}</div>;
   }
 

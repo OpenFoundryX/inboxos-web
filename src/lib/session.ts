@@ -1,5 +1,6 @@
 import { apiFetch } from "./api";
 import { isAuthed, isOnboarded } from "./auth";
+import { getCalendarStatus, getGmailStatus } from "./connections";
 
 export type UserRead = {
   id: string;
@@ -40,12 +41,23 @@ export async function logout(): Promise<void> {
 
 export type Access = { authed: boolean; onboarded: boolean };
 
-/** Real session when configured (a real session counts as onboarded, since the
- *  backend has no onboarding flag); otherwise the mock flags. */
+/** Real session when configured: authed once signed in, but "onboarded" only
+ *  once BOTH Gmail and Calendar are connected (so the connect step gates the
+ *  dashboard). Otherwise the mock flags. */
 export async function checkAccess(): Promise<Access> {
   if (backendConfigured()) {
     const me = await getMe();
-    return { authed: Boolean(me), onboarded: Boolean(me) };
+    if (!me) return { authed: false, onboarded: false };
+    try {
+      const [gmail, calendar] = await Promise.all([
+        getGmailStatus(),
+        getCalendarStatus(),
+      ]);
+      return { authed: true, onboarded: gmail.connected && calendar.connected };
+    } catch {
+      // Status unreachable → treat as not-yet-connected (send to connect step).
+      return { authed: true, onboarded: false };
+    }
   }
   return { authed: isAuthed(), onboarded: isOnboarded() };
 }

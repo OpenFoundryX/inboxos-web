@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { checkAccess } from "@/lib/session";
+import { backendConfigured, checkAccess } from "@/lib/session";
 import Sidebar from "@/components/app/Sidebar";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -18,7 +18,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         return;
       }
       if (!onboarded) {
-        router.replace("/onboarding/creating");
+        router.replace(backendConfigured() ? "/onboarding/connect" : "/onboarding/creating");
         return;
       }
       setReady(true);
