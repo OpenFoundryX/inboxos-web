@@ -161,3 +161,27 @@ export function MicIcon(p: IconProps) {
     </Base>
   );
 }
+
+export function TrashIcon(p: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...p}>
+      <path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 002 2h6a2 2 0 002-2l1-12M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2" />
+    </svg>
+  );
+}
+
+export function SendIcon(p: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...p}>
+      <path d="M4 12l16-8-8 16-2-6-6-2z" />
+    </svg>
+  );
+}
+
+export function PaperclipIcon(p: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" {...p}>
+      <path d="M8 12l6-6a3 3 0 014 4l-8 8a4 4 0 01-6-6l7-7" />
+    </svg>
+  );
+}
