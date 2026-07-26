@@ -205,8 +205,12 @@ export default function ChatPage() {
         controller.signal,
       );
 
-      // If the stream ended without `done` (network drop), stop the spinner.
-      setStreaming(false);
+      // Defensive fallback: onDone/onError already clear `streaming` on every
+      // non-abort path, and streamAsk guarantees exactly one terminal
+      // callback, so this is normally a no-op. Guarded the same way as
+      // every other terminal write in this function so a stale settle from
+      // an aborted turn A can't clobber a genuinely in-flight turn B.
+      if (!controller.signal.aborted) setStreaming(false);
     },
     [activeId, configured, refreshConversations],
   );
