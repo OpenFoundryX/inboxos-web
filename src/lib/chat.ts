@@ -97,6 +97,7 @@ export async function streamAsk(
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
   let buffer = "";
+  let seenTerminal = false;
 
   try {
     for (;;) {
@@ -106,10 +107,29 @@ export async function streamAsk(
 
       let split = buffer.indexOf("\n\n");
       while (split !== -1) {
-        dispatch(buffer.slice(0, split), handlers);
+        const event = dispatch(buffer.slice(0, split), handlers);
+        if (event === "done" || event === "error") seenTerminal = true;
         buffer = buffer.slice(split + 2);
         split = buffer.indexOf("\n\n");
       }
+    }
+
+    // Flush the decoder to capture any remaining bytes
+    buffer += decoder.decode();
+
+    // Drain any remaining complete frames from the buffer
+    let split = buffer.indexOf("\n\n");
+    while (split !== -1) {
+      const event = dispatch(buffer.slice(0, split), handlers);
+      if (event === "done" || event === "error") seenTerminal = true;
+      buffer = buffer.slice(split + 2);
+      split = buffer.indexOf("\n\n");
+    }
+
+    // If no terminal event was seen and the request was not aborted,
+    // report an unexpected end
+    if (!seenTerminal && !signal?.aborted) {
+      handlers.onError?.("The answer ended unexpectedly. Please try again.");
     }
   } catch (err) {
     if ((err as Error).name !== "AbortError") {
@@ -118,20 +138,20 @@ export async function streamAsk(
   }
 }
 
-function dispatch(frame: string, handlers: StreamHandlers) {
+function dispatch(frame: string, handlers: StreamHandlers): string | null {
   let event = "";
   const dataLines: string[] = [];
   for (const line of frame.split("\n")) {
     if (line.startsWith("event:")) event = line.slice(6).trim();
     else if (line.startsWith("data:")) dataLines.push(line.slice(5).trim());
   }
-  if (!event || dataLines.length === 0) return;
+  if (!event || dataLines.length === 0) return null;
 
   let data: Record<string, unknown>;
   try {
     data = JSON.parse(dataLines.join("\n"));
   } catch {
-    return;
+    return null;
   }
 
   switch (event) {
@@ -152,9 +172,11 @@ function dispatch(frame: string, handlers: StreamHandlers) {
       break;
     case "done":
       handlers.onDone?.(String(data.message_id));
-      break;
+      return "done";
     case "error":
       handlers.onError?.(String(data.message));
-      break;
+      return "error";
   }
+
+  return event;
 }
