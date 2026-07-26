@@ -35,7 +35,7 @@ export default function SourceList({ sources }: { sources: ChatSource[] }) {
       {open ? (
         <ul className="mt-2 space-y-1.5">
           {sources.map((s, i) => {
-            const href = safeHref(s.link ?? "");
+            const href = s.link ? safeHref(s.link) : null;
             const content = (
               <>
                 <span className="flex items-center gap-1.5 font-medium text-ink">
