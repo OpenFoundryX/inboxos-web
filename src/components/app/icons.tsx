@@ -75,6 +75,25 @@ export function MailmanIcon(p: IconProps) {
   );
 }
 
+export function EnvelopeIcon(p: IconProps) {
+  return (
+    <Base {...p}>
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="m3 7 9 6 9-6" />
+    </Base>
+  );
+}
+
+export function ExternalLinkIcon(p: IconProps) {
+  return (
+    <Base {...p}>
+      <path d="M14 4h6v6" />
+      <path d="M20 4 11 13" />
+      <path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />
+    </Base>
+  );
+}
+
 export function SettingsIcon(p: IconProps) {
   return (
     <Base {...p}>
