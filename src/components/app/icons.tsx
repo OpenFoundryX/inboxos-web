@@ -75,6 +75,25 @@ export function MailmanIcon(p: IconProps) {
   );
 }
 
+export function EnvelopeIcon(p: IconProps) {
+  return (
+    <Base {...p}>
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="m3 7 9 6 9-6" />
+    </Base>
+  );
+}
+
+export function ExternalLinkIcon(p: IconProps) {
+  return (
+    <Base {...p}>
+      <path d="M14 4h6v6" />
+      <path d="M20 4 11 13" />
+      <path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />
+    </Base>
+  );
+}
+
 export function SettingsIcon(p: IconProps) {
   return (
     <Base {...p}>
@@ -158,6 +177,30 @@ export function MicIcon(p: IconProps) {
     <Base {...p}>
       <rect x="9" y="2" width="6" height="12" rx="3" />
       <path d="M5 10a7 7 0 0 0 14 0M12 17v4" />
+    </Base>
+  );
+}
+
+export function TrashIcon(p: IconProps) {
+  return (
+    <Base {...p}>
+      <path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 002 2h6a2 2 0 002-2l1-12M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2" />
+    </Base>
+  );
+}
+
+export function SendIcon(p: IconProps) {
+  return (
+    <Base {...p}>
+      <path d="M4 12l16-8-8 16-2-6-6-2z" />
+    </Base>
+  );
+}
+
+export function PaperclipIcon(p: IconProps) {
+  return (
+    <Base {...p}>
+      <path d="M8 12l6-6a3 3 0 014 4l-8 8a4 4 0 01-6-6l7-7" />
     </Base>
   );
 }
