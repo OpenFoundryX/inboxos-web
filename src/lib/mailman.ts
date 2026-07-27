@@ -23,17 +23,6 @@ export type SettingsUpdate = Partial<Omit<MailmanSettings, "is_active" | "last_d
 export type Vip = { domains: string[]; addresses: string[]; keywords: string[] };
 export type VipUpdate = Partial<Vip>;
 
-export type MailmanStatus = { is_active: boolean; held_count: number };
-
-export type HeldEmail = {
-  id?: string | null;
-  thread_id?: string | null;
-  sender?: string | null;
-  subject?: string | null;
-  snippet?: string | null;
-  date?: string | null;
-};
-
 export const DEFAULT_SETTINGS: MailmanSettings = {
   is_active: false,
   timezone: "UTC",
@@ -52,14 +41,12 @@ export const DEFAULT_SETTINGS: MailmanSettings = {
 
 export const DEFAULT_VIP: Vip = { domains: [], addresses: [], keywords: [] };
 
-export const getStatus = () => apiFetch<MailmanStatus>("/mailman/status");
 export const getSettings = () => apiFetch<MailmanSettings>("/mailman/settings");
 export const updateSettings = (body: SettingsUpdate) =>
   apiFetch<MailmanSettings>("/mailman/settings", { method: "PUT", body: JSON.stringify(body) });
 export const getVip = () => apiFetch<Vip>("/mailman/vip");
 export const updateVip = (body: VipUpdate) =>
   apiFetch<Vip>("/mailman/vip", { method: "PUT", body: JSON.stringify(body) });
-export const listHeld = () => apiFetch<HeldEmail[]>("/mailman/held");
 export const startBatching = () =>
   apiFetch<MailmanSettings>("/mailman/start", { method: "POST" });
 export const stopBatching = () =>

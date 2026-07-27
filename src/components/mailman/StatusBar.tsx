@@ -5,13 +5,12 @@ import Toggle from "@/components/ui/Toggle";
 
 type StatusBarProps = {
   active: boolean;
-  heldCount: number | null;
   lastDeliveryAt: string | null;
   disabled?: boolean;
   onToggle: (v: boolean) => void;
 };
 
-export default function StatusBar({ active, heldCount, lastDeliveryAt, disabled, onToggle }: StatusBarProps) {
+export default function StatusBar({ active, lastDeliveryAt, disabled, onToggle }: StatusBarProps) {
   return (
     <Card className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-3">
@@ -26,10 +25,6 @@ export default function StatusBar({ active, heldCount, lastDeliveryAt, disabled,
         </div>
       </div>
       <div className="flex gap-8">
-        <div>
-          <div className="text-xs text-ink/50">Held now</div>
-          <div className="text-lg font-extrabold text-ink">{heldCount ?? "—"}</div>
-        </div>
         <div>
           <div className="text-xs text-ink/50">Last delivery</div>
           <div className="text-sm font-semibold text-ink/70">
