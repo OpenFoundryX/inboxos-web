@@ -176,12 +176,11 @@ export default function ChatPage() {
             // flight. Applying its reload now would clobber whatever the
             // user has since switched to.
             if (controller.signal.aborted) return;
-            setStreaming(false);
-            setStage(null);
-            setStreamedText("");
-            setStreamedSources([]);
             // Reload the authoritative transcript: it carries real message ids
             // (needed to confirm actions) and the persisted assistant turn.
+            // The streamed answer stays on screen until that lands — clearing
+            // it up front blanked the reply for the whole round-trip, which
+            // read as the answer being thrown away.
             const cid = conversationId;
             if (cid) {
               try {
@@ -192,14 +191,17 @@ export default function ChatPage() {
                 if (controller.signal.aborted) return;
                 setMessages(detail.messages);
               } catch {
-                if (!controller.signal.aborted) {
-                  setError("Answer saved, but the transcript couldn't be reloaded.");
-                }
+                if (controller.signal.aborted) return;
+                setError("Answer saved, but the transcript couldn't be reloaded.");
               }
             }
-            if (!controller.signal.aborted) {
-              void refreshConversations();
-            }
+            // Batched with the setMessages above, so the streamed bubble is
+            // swapped for the persisted one in a single paint.
+            setStreaming(false);
+            setStage(null);
+            setStreamedText("");
+            setStreamedSources([]);
+            void refreshConversations();
           },
         },
         controller.signal,
@@ -237,6 +239,7 @@ export default function ChatPage() {
               <AskBar
                 onSubmit={(t) => void ask(t)}
                 disabled={streaming}
+                busy={streaming}
                 placeholder="Ask me anything about your emails…"
               />
               {error ? <p className="mt-4 text-center text-sm text-accent">{error}</p> : null}
@@ -261,6 +264,7 @@ export default function ChatPage() {
                 <AskBar
                   onSubmit={(t) => void ask(t)}
                   disabled={streaming}
+                  busy={streaming}
                   showChips={false}
                   placeholder="Ask a follow-up…"
                 />

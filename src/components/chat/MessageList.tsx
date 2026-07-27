@@ -41,7 +41,9 @@ export default function MessageList({
 
       {streaming ? (
         <div className="max-w-[85%] space-y-2">
-          {stage && !streamedText ? <StageIndicator label={stage} /> : null}
+          {/* Not gated on `stage`: the wait before the server's first event is
+              exactly the gap that used to render as nothing at all. */}
+          {streamedText ? null : <StageIndicator label={stage} />}
           {streamedText ? (
             <div className="rounded-2xl bg-card px-4 py-3">
               <Markdown text={streamedText} />

@@ -9,11 +9,14 @@ export default function AskBar({
   onSubmit,
   placeholder = "Ask me anything about your meetings or emails…",
   disabled = false,
+  busy = false,
   showChips = true,
 }: {
   onSubmit?: (text: string) => void;
   placeholder?: string;
   disabled?: boolean;
+  // Waiting on an answer, as opposed to merely disabled: the button says so.
+  busy?: boolean;
   showChips?: boolean;
 }) {
   const [value, setValue] = useState("");
@@ -44,11 +47,19 @@ export default function AskBar({
         <MicIcon className="h-5 w-5 text-ink/20" />
         <button
           type="submit"
-          aria-label="Send"
-          disabled={disabled || !value.trim()}
-          className="rounded-full bg-accent p-2 text-white hover:bg-accent-dark disabled:opacity-30"
+          aria-label={busy ? "Waiting for an answer" : "Send"}
+          disabled={disabled || busy || !value.trim()}
+          // The input is empty right after sending, so the usual disabled
+          // dimming would fade the spinner to near-invisible.
+          className={`rounded-full bg-accent p-2 text-white hover:bg-accent-dark ${
+            busy ? "" : "disabled:opacity-30"
+          }`}
         >
-          <SendIcon className="h-4 w-4" />
+          {busy ? (
+            <span className="block h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+          ) : (
+            <SendIcon className="h-4 w-4" />
+          )}
         </button>
       </form>
 
