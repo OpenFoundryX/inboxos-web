@@ -113,13 +113,9 @@ export default function CategorizationPage() {
     setSaving(true);
     try {
       const touched = categories.filter((c) => dirtyKeys.has(c.key));
+      // Only `actions` is editable from this page, so that's all we send.
       const updated = await Promise.all(
-        touched.map((c) =>
-          updateCategory(c.key, {
-            is_enabled: c.is_enabled,
-            actions: c.actions,
-          }),
-        ),
+        touched.map((c) => updateCategory(c.key, { actions: c.actions })),
       );
       // Trust the server's copy — it merges partial actions and may normalise.
       if (updated.length) {
@@ -141,7 +137,14 @@ export default function CategorizationPage() {
 
       setDirtyKeys(new Set());
       setSettingsDirty(false);
-      notify("Preferences updated");
+      // Moving a category between columns also sweeps the mail already carrying
+      // its label, which runs in the background — say so rather than implying
+      // the mailbox is already up to date.
+      notify(
+        touched.length > 0
+          ? "Saved — updating your inbox now"
+          : "Preferences updated",
+      );
     } catch (err) {
       fail(err, "Could not save your preferences");
     } finally {
