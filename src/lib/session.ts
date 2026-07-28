@@ -9,6 +9,7 @@ export type UserRead = {
   picture?: string | null;
   is_active: boolean;
   last_login_at?: string | null;
+  onboarded_at?: string | null;
 };
 
 /** True when a backend URL is configured; enables the real auth + API path. */
@@ -39,25 +40,29 @@ export async function logout(): Promise<void> {
   }
 }
 
-export type Access = { authed: boolean; onboarded: boolean };
+export type Access = { authed: boolean; connected: boolean; onboarded: boolean };
 
-/** Real session when configured: authed once signed in, but "onboarded" only
- *  once BOTH Gmail and Calendar are connected (so the connect step gates the
- *  dashboard). Otherwise the mock flags. */
+/** `connected` is both integrations granted; `onboarded` is the wizard actually
+ *  finished. They used to be the same flag, which let a user reach the dashboard
+ *  without ever seeing the settings steps. Without a backend, the mock flags
+ *  stand in — there is no onboarded_at to read. */
 export async function checkAccess(): Promise<Access> {
   if (backendConfigured()) {
     const me = await getMe();
-    if (!me) return { authed: false, onboarded: false };
+    if (!me) return { authed: false, connected: false, onboarded: false };
+    const onboarded = Boolean(me.onboarded_at);
     try {
       const [gmail, calendar] = await Promise.all([
         getGmailStatus(),
         getCalendarStatus(),
       ]);
-      return { authed: true, onboarded: gmail.connected && calendar.connected };
+      return { authed: true, connected: gmail.connected && calendar.connected, onboarded };
     } catch {
       // Status unreachable → treat as not-yet-connected (send to connect step).
-      return { authed: true, onboarded: false };
+      return { authed: true, connected: false, onboarded };
     }
   }
-  return { authed: isAuthed(), onboarded: isOnboarded() };
+  // `connected: true` without a backend — there is nothing to connect, and a
+  // false here would ping-pong between the connect step and the dashboard.
+  return { authed: isAuthed(), connected: true, onboarded: isOnboarded() };
 }
