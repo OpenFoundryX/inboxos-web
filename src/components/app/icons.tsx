@@ -147,6 +147,14 @@ export function ChevronDownIcon(p: IconProps) {
   );
 }
 
+export function ChevronRightIcon(p: IconProps) {
+  return (
+    <Base {...p}>
+      <path d="m9 18 6-6-6-6" />
+    </Base>
+  );
+}
+
 export function CheckIcon(p: IconProps) {
   return (
     <Base {...p}>
