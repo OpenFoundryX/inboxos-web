@@ -7,6 +7,12 @@ const ONBOARDED = "inboxos_onboarded";
  *  from `lib/onboarding`, which is where the steps import it from. */
 export const BATCHING_CHOICE_KEY = "inboxos_batching_choice";
 
+/** The inbox-labels step's answer, and the same story: a freshly seeded taxonomy
+ *  is identical to what "All my emails" writes, so "never answered" cannot be
+ *  read back from the API. Lives here for the same reason, cleared in the same
+ *  two places. */
+export const CATEGORIES_CHOICE_KEY = "inboxos_categories_choice";
+
 function setFlag(key: string) {
   window.localStorage.setItem(key, "1");
   document.cookie = `${key}=1; path=/; max-age=${60 * 60 * 24 * 30}`;
@@ -26,9 +32,10 @@ export function signOut(): void {
   if (typeof window === "undefined") return;
   clearFlag(KEY);
   clearFlag(ONBOARDED);
-  // Not a flag+cookie pair, just a localStorage value — but it is wizard state
+  // Not flag+cookie pairs, just localStorage values — but they are wizard state
   // and must not outlive the session that answered.
   window.localStorage.removeItem(BATCHING_CHOICE_KEY);
+  window.localStorage.removeItem(CATEGORIES_CHOICE_KEY);
 }
 
 export function isAuthed(): boolean {

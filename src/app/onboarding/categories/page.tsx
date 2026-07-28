@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import StepShell from "@/components/onboarding/StepShell";
 import { backendConfigured } from "@/lib/session";
+import { CATEGORIES_CHOICE_KEY } from "@/lib/onboarding";
 import {
   getSettings,
   listCategories,
@@ -76,22 +77,42 @@ function choiceFrom(isEnabled: boolean, categories: Category[]): Choice {
   return marketing.actions?.archive ? "attention" : "all";
 }
 
+function isChoice(value: string | null): value is Choice {
+  return value === "attention" || value === "all" || value === "none";
+}
+
 export default function CategoriesStep() {
   const router = useRouter();
   const [choice, setChoice] = useState<Choice>("attention");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /** Set the moment the user picks an option, so a late-arriving prefill can
+   *  never replace an answer they already gave. The reads below are a round
+   *  trip that includes a six-row INSERT on a new account, and the options are
+   *  clickable the whole time. */
+  const touched = useRef(false);
 
-  // Pre-fill from what is actually saved so a resumed wizard cannot silently
-  // re-answer for the user. Both reads are needed: settings carries "none", the
-  // taxonomy carries the attention/all distinction. A failed fetch keeps the
-  // defaults — not worth an error card here.
+  // Pre-fill so a resumed wizard cannot silently re-answer for the user. The
+  // stored answer wins, because the API cannot express "not answered yet": a
+  // freshly seeded taxonomy is byte-identical to what "All my emails" writes,
+  // and this step's own listCategories() is what seeds it. Without the key, a
+  // first-time visitor would be moved off the "Only what needs my attention"
+  // default onto "All my emails" by their own prefill.
+  //
+  // Falling back to the API keeps a real saved answer honest: settings carries
+  // "none", the taxonomy carries the attention/all distinction. A failed fetch
+  // keeps the default — not worth an error card here.
   useEffect(() => {
+    const stored = window.localStorage.getItem(CATEGORIES_CHOICE_KEY);
+    if (isChoice(stored)) {
+      setChoice(stored);
+      return;
+    }
     if (!backendConfigured()) return;
     let active = true;
     Promise.all([getSettings(), listCategories()])
       .then(([s, categories]) => {
-        if (!active) return;
+        if (!active || touched.current) return;
         setChoice(choiceFrom(s.is_enabled, categories));
       })
       .catch(() => {});
@@ -100,7 +121,23 @@ export default function CategoriesStep() {
     };
   }, []);
 
+  function pick(value: Choice) {
+    touched.current = true;
+    setChoice(value);
+  }
+
   const next = () => router.push("/onboarding/notetaker");
+
+  /** Remember the answer for the length of this wizard run. Cleared by
+   *  finishOnboarding and by signOut. */
+  function remember() {
+    window.localStorage.setItem(CATEGORIES_CHOICE_KEY, choice);
+  }
+
+  function onSkip() {
+    remember();
+    next();
+  }
 
   async function onContinue() {
     setBusy(true);
@@ -113,13 +150,14 @@ export default function CategoriesStep() {
           // Seed the taxonomy first, in one request. GET /categories creates the
           // six builtins on first call; the PATCHes below would otherwise each
           // seed concurrently in their own session and five of the six would
-          // lose the unique-key race. The prefill above usually got here first —
-          // this is the guard for the user who clicks Continue before it lands,
-          // or whose prefill fetch failed.
+          // lose the unique-key race. Not redundant with the prefill: that read
+          // is skipped entirely when a stored answer exists, and it can lose the
+          // race with a fast Continue or fail outright.
           await listCategories();
           await Promise.all(updates.map(({ key, body }) => updateCategory(key, body)));
         }
       }
+      remember();
       next();
     } catch {
       setError("Couldn't save your label settings. Try again.");
@@ -134,7 +172,7 @@ export default function CategoriesStep() {
       error={error}
       busy={busy}
       onContinue={onContinue}
-      onSkip={next}
+      onSkip={onSkip}
     >
       <div className="space-y-3">
         {OPTIONS.map((opt) => {
@@ -143,7 +181,7 @@ export default function CategoriesStep() {
             <button
               key={opt.value}
               type="button"
-              onClick={() => setChoice(opt.value)}
+              onClick={() => pick(opt.value)}
               className={`w-full rounded-2xl border p-4 text-left transition-colors ${
                 active ? "border-ink bg-card" : "border-black/5 bg-card hover:border-ink/20"
               }`}
