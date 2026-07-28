@@ -35,7 +35,7 @@ export default function AskBar({
           e.preventDefault();
           send(value);
         }}
-        className="flex items-center gap-3 rounded-full border border-ink/10 bg-card px-4 py-3"
+        className="flex items-center gap-3 rounded-full border border-ink/15 bg-card px-5 py-4 shadow-sm"
       >
         <input
           value={value}

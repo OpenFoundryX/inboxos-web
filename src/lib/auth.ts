@@ -1,6 +1,5 @@
 const KEY = "inboxos_authed";
 const ONBOARDED = "inboxos_onboarded";
-const SETUP = "inboxos_setup_done";
 const INBOX_PREF = "inboxos_inbox_pref";
 
 function setFlag(key: string) {
@@ -22,7 +21,6 @@ export function signOut(): void {
   if (typeof window === "undefined") return;
   clearFlag(KEY);
   clearFlag(ONBOARDED);
-  clearFlag(SETUP);
   window.localStorage.removeItem(INBOX_PREF);
 }
 
@@ -41,19 +39,8 @@ export function setOnboarded(): void {
   setFlag(ONBOARDED);
 }
 
-export function isSetupDone(): boolean {
-  if (typeof window === "undefined") return false;
-  return window.localStorage.getItem(SETUP) === "1";
-}
-
-export function setSetupDone(): void {
-  if (typeof window === "undefined") return;
-  setFlag(SETUP);
-}
-
 export function resetOnboarding(): void {
   if (typeof window === "undefined") return;
   clearFlag(ONBOARDED);
-  clearFlag(SETUP);
   window.localStorage.removeItem(INBOX_PREF);
 }
