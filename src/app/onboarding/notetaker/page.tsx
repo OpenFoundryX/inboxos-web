@@ -11,7 +11,7 @@ import { getNotetakerSettings, updateNotetakerSettings } from "@/lib/meetings";
 
 type Choice = "ask" | "auto" | "off";
 
-const OPTIONS = [
+const OPTIONS: { value: Choice; label: string; description?: string }[] = [
   {
     value: "ask",
     label: "Only when I ask",
@@ -57,10 +57,20 @@ export default function NotetakerStep() {
   async function finish(save: boolean) {
     setBusy(true);
     setError(null);
-    try {
-      if (save && backendConfigured()) {
+
+    // Two failures, two messages: nothing has been set up yet when the
+    // preference PUT fails, so saying setup failed misdescribes what happened.
+    if (save && backendConfigured()) {
+      try {
         await updateNotetakerSettings(SETTINGS[choice]);
+      } catch {
+        setError("Couldn't save your meeting-notes preference. Try again.");
+        setBusy(false);
+        return;
       }
+    }
+
+    try {
       setApplying(true);
       const activateBatching =
         window.localStorage.getItem(BATCHING_CHOICE_KEY) !== null &&

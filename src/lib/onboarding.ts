@@ -1,5 +1,5 @@
 import { apiFetch } from "./api";
-import { setOnboarded } from "./auth";
+import { BATCHING_CHOICE_KEY, setOnboarded } from "./auth";
 import { startBatching } from "./mailman";
 import { backendConfigured, type UserRead } from "./session";
 
@@ -9,9 +9,10 @@ import { backendConfigured, type UserRead } from "./session";
 export const BATCHING_FAILED_KEY = "inboxos_batching_failed";
 
 /** Written by the scheduled-mail step, read by the last step, which owns the
- *  Finish click. "live" means never call startBatching(). It lives here rather
- *  than in the step's own module so the two steps do not import each other. */
-export const BATCHING_CHOICE_KEY = "inboxos_batching_choice";
+ *  Finish click. "live" means never call startBatching(). Re-exported here
+ *  rather than imported from a step's own module so the two steps do not import
+ *  each other; it is declared in `lib/auth` so `signOut()` clears it. */
+export { BATCHING_CHOICE_KEY };
 
 export const completeOnboarding = () =>
   apiFetch<UserRead>("/users/me/onboarding/complete", { method: "POST" });
@@ -29,6 +30,7 @@ export async function finishOnboarding(
 ): Promise<{ batchingFailed: boolean }> {
   if (!backendConfigured()) {
     setOnboarded();
+    window.localStorage.removeItem(BATCHING_CHOICE_KEY);
     return { batchingFailed: false };
   }
 
@@ -43,5 +45,9 @@ export async function finishOnboarding(
   }
 
   await completeOnboarding();
+  // The choice has done its job. Left behind it would outlive this wizard and
+  // this session, and a later direct hit on step 4 would act on a stale answer.
+  // Cleared only after completion lands, so a retry still sees it.
+  window.localStorage.removeItem(BATCHING_CHOICE_KEY);
   return { batchingFailed };
 }

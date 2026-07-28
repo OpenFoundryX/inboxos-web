@@ -1,6 +1,12 @@
 const KEY = "inboxos_authed";
 const ONBOARDED = "inboxos_onboarded";
 
+/** The scheduled-mail step's answer, read by the last step. It lives here, with
+ *  the other browser-storage keys, so `signOut()` can clear it — left behind it
+ *  survives a sign-out and an account switch on a shared browser. Re-exported
+ *  from `lib/onboarding`, which is where the steps import it from. */
+export const BATCHING_CHOICE_KEY = "inboxos_batching_choice";
+
 function setFlag(key: string) {
   window.localStorage.setItem(key, "1");
   document.cookie = `${key}=1; path=/; max-age=${60 * 60 * 24 * 30}`;
@@ -20,6 +26,9 @@ export function signOut(): void {
   if (typeof window === "undefined") return;
   clearFlag(KEY);
   clearFlag(ONBOARDED);
+  // Not a flag+cookie pair, just a localStorage value — but it is wizard state
+  // and must not outlive the session that answered.
+  window.localStorage.removeItem(BATCHING_CHOICE_KEY);
 }
 
 export function isAuthed(): boolean {

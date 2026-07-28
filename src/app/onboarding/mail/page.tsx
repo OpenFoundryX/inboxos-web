@@ -10,7 +10,7 @@ import { getSettings, updateSettings, type SettingsUpdate } from "@/lib/mailman"
 
 type Choice = "times" | "interval" | "live";
 
-const OPTIONS = [
+const OPTIONS: { value: Choice; label: string; description?: string }[] = [
   {
     value: "times",
     label: "A few times a day",
@@ -50,7 +50,16 @@ export default function MailStep() {
 
   // Pre-fill from whatever is already saved so a resumed wizard shows the real
   // state. A failed fetch is not worth an error here — the defaults are fine.
+  //
+  // The stored answer wins over the settings row, because "live" writes nothing:
+  // its delivery_mode is whatever was there before, so settings alone can never
+  // reproduce that choice.
   useEffect(() => {
+    const stored = window.localStorage.getItem(BATCHING_CHOICE_KEY);
+    if (stored === "times" || stored === "interval" || stored === "live") {
+      setChoice(stored);
+      return;
+    }
     if (!backendConfigured()) return;
     let active = true;
     getSettings()

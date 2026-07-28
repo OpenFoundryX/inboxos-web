@@ -6,8 +6,10 @@ import StepShell from "@/components/onboarding/StepShell";
 import { backendConfigured } from "@/lib/session";
 import {
   getSettings,
+  listCategories,
   updateCategory,
   updateSettings,
+  type Category,
   type CategoryUpdate,
 } from "@/lib/categorization";
 
@@ -64,19 +66,33 @@ function categoryUpdates(choice: Choice): { key: string; body: CategoryUpdate }[
   return [];
 }
 
+/** The saved state read back as one of our three answers. `is_enabled: false` is
+ *  "none"; otherwise the archive flag on `marketing` is the only thing that
+ *  distinguishes "attention" from "all", since both enable all six labels. */
+function choiceFrom(isEnabled: boolean, categories: Category[]): Choice {
+  if (!isEnabled) return "none";
+  const marketing = categories.find((c) => c.key === "marketing");
+  if (!marketing) return "attention";
+  return marketing.actions?.archive ? "attention" : "all";
+}
+
 export default function CategoriesStep() {
   const router = useRouter();
   const [choice, setChoice] = useState<Choice>("attention");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Pre-fill from what is actually saved so a resumed wizard cannot silently
+  // re-answer for the user. Both reads are needed: settings carries "none", the
+  // taxonomy carries the attention/all distinction. A failed fetch keeps the
+  // defaults — not worth an error card here.
   useEffect(() => {
     if (!backendConfigured()) return;
     let active = true;
-    getSettings()
-      .then((s) => {
-        if (!active || s.is_enabled) return;
-        setChoice("none");
+    Promise.all([getSettings(), listCategories()])
+      .then(([s, categories]) => {
+        if (!active) return;
+        setChoice(choiceFrom(s.is_enabled, categories));
       })
       .catch(() => {});
     return () => {
@@ -90,11 +106,19 @@ export default function CategoriesStep() {
     setBusy(true);
     setError(null);
     try {
+      const updates = categoryUpdates(choice);
       if (backendConfigured()) {
         await updateSettings({ is_enabled: choice !== "none" });
-        await Promise.all(
-          categoryUpdates(choice).map(({ key, body }) => updateCategory(key, body)),
-        );
+        if (updates.length > 0) {
+          // Seed the taxonomy first, in one request. GET /categories creates the
+          // six builtins on first call; the PATCHes below would otherwise each
+          // seed concurrently in their own session and five of the six would
+          // lose the unique-key race. The prefill above usually got here first —
+          // this is the guard for the user who clicks Continue before it lands,
+          // or whose prefill fetch failed.
+          await listCategories();
+          await Promise.all(updates.map(({ key, body }) => updateCategory(key, body)));
+        }
       }
       next();
     } catch {

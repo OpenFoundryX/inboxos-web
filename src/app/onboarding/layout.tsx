@@ -20,15 +20,23 @@ export default function OnboardingLayout({ children }: { children: React.ReactNo
         router.replace("/login");
         return;
       }
-      // Already finished → the wizard is not somewhere to wander back into.
-      if (onboarded) {
-        router.replace("/dashboard");
+      // Missing grants come first, and outrank `onboarded`: connect is the only
+      // screen in the app that can re-grant Gmail/Calendar, so an already-
+      // onboarded user whose access was revoked has to be able to reach it. Its
+      // Continue goes to /onboarding/mail, which bounces such a user on to the
+      // dashboard, so the flow still terminates.
+      if (!connected) {
+        if (!pathname.startsWith("/onboarding/connect")) {
+          router.replace("/onboarding/connect");
+          return;
+        }
+        setReady(true);
         return;
       }
-      // Nothing works without both grants, so the settings steps stay unreachable
-      // until they land.
-      if (!connected && !pathname.startsWith("/onboarding/connect")) {
-        router.replace("/onboarding/connect");
+      // Connected and already finished → the wizard is not somewhere to wander
+      // back into.
+      if (onboarded) {
+        router.replace("/dashboard");
         return;
       }
       setReady(true);
