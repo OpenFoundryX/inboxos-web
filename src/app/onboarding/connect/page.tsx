@@ -59,61 +59,66 @@ export default function ConnectPage() {
 
   const bothConnected = gmail && calendar;
 
+  // Same two-column rhythm as StepShell, which owns steps 2-4: question on the
+  // left, the thing to act on plus the buttons on the right. Not StepShell
+  // itself — this step has no "Skip for now" (nothing works without both
+  // grants) and its Continue stays disabled until they land.
   return (
-    <div className="mx-auto flex min-h-screen max-w-xl flex-col justify-center px-6 py-16">
-      <span className="mb-3 text-xl font-extrabold tracking-tight text-accent">InboxOS</span>
-      <h1 className="text-2xl font-extrabold tracking-tight">Connect your accounts</h1>
-      <p className="mt-2 text-sm text-ink/60">
-        InboxOS needs access to your Gmail and Google Calendar to organize your inbox and help you
-        schedule meetings.
-      </p>
-
-      {error ? (
-        <Card className="mt-6 border border-accent/30 p-4 text-sm text-accent-dark">{error}</Card>
-      ) : null}
-
-      <div className="mt-8 space-y-4">
-        <ServiceRow
-          title="Gmail"
-          desc="Read, organize, and draft replies."
-          letter="M"
-          badgeClass="bg-accent/15 text-accent"
-          connected={gmail}
-          busy={busy === "gmail"}
-          loading={loading}
-          onConnect={() => connect("gmail")}
-        />
-        <ServiceRow
-          title="Google Calendar"
-          desc="Suggest availability and schedule meetings."
-          letter="C"
-          badgeClass="bg-blue-500/15 text-blue-600"
-          connected={calendar}
-          busy={busy === "calendar"}
-          loading={loading}
-          onConnect={() => connect("calendar")}
-        />
+    <div className="grid gap-6 md:grid-cols-2">
+      <div className="pt-4">
+        <h1 className="text-2xl font-extrabold tracking-tight">Connect your accounts</h1>
+        <p className="mt-4 text-sm text-ink/60">
+          InboxOS needs access to your Gmail and Google Calendar to organize your inbox and help
+          you schedule meetings.
+        </p>
+        <p className="mt-10 text-xs text-ink/40">
+          You&apos;ll be sent to grant access, then returned here.
+        </p>
       </div>
+      <div>
+        <div className="space-y-3">
+          <ServiceRow
+            title="Gmail"
+            desc="Read, organize, and draft replies."
+            letter="M"
+            badgeClass="bg-accent/15 text-accent"
+            connected={gmail}
+            busy={busy === "gmail"}
+            loading={loading}
+            onConnect={() => connect("gmail")}
+          />
+          <ServiceRow
+            title="Google Calendar"
+            desc="Suggest availability and schedule meetings."
+            letter="C"
+            badgeClass="bg-blue-500/15 text-blue-600"
+            connected={calendar}
+            busy={busy === "calendar"}
+            loading={loading}
+            onConnect={() => connect("calendar")}
+          />
+        </div>
 
-      <div className="mt-8 flex items-center justify-between">
-        <button
-          type="button"
-          onClick={refresh}
-          className="text-sm font-medium text-ink/50 hover:text-ink"
-        >
-          Refresh status
-        </button>
+        {error ? (
+          <Card className="mt-4 border border-accent/30 p-4 text-sm text-accent-dark">{error}</Card>
+        ) : null}
+
         <Button
           variant="dark"
           disabled={!bothConnected}
           onClick={() => router.replace("/onboarding/mail")}
+          className="mt-4 w-full"
         >
           Continue
         </Button>
+        <button
+          type="button"
+          onClick={refresh}
+          className="mt-3 w-full text-sm font-medium text-ink/50 hover:text-ink"
+        >
+          Refresh status
+        </button>
       </div>
-      <p className="mt-4 text-center text-xs text-ink/40">
-        You&apos;ll be sent to grant access, then returned here.
-      </p>
     </div>
   );
 }
