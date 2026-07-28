@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { backendConfigured, checkAccess } from "@/lib/session";
+import { checkAccess } from "@/lib/session";
 import Sidebar from "@/components/app/Sidebar";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -11,14 +11,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   useEffect(() => {
     let active = true;
-    checkAccess().then(({ authed, onboarded }) => {
+    checkAccess().then(({ authed, connected, onboarded }) => {
       if (!active) return;
       if (!authed) {
         router.replace("/login");
         return;
       }
       if (!onboarded) {
-        router.replace(backendConfigured() ? "/onboarding/connect" : "/onboarding/creating");
+        router.replace(connected ? "/onboarding/mail" : "/onboarding/connect");
         return;
       }
       setReady(true);

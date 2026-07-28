@@ -14,10 +14,21 @@ export default function OnboardingLayout({ children }: { children: React.ReactNo
 
   useEffect(() => {
     let active = true;
-    checkAccess().then(({ authed }) => {
+    checkAccess().then(({ authed, connected, onboarded }) => {
       if (!active) return;
       if (!authed) {
         router.replace("/login");
+        return;
+      }
+      // Already finished → the wizard is not somewhere to wander back into.
+      if (onboarded) {
+        router.replace("/dashboard");
+        return;
+      }
+      // Nothing works without both grants, so the settings steps stay unreachable
+      // until they land.
+      if (!connected && !pathname.startsWith("/onboarding/connect")) {
+        router.replace("/onboarding/connect");
         return;
       }
       setReady(true);
@@ -25,20 +36,12 @@ export default function OnboardingLayout({ children }: { children: React.ReactNo
     return () => {
       active = false;
     };
-  }, [router]);
+  }, [router, pathname]);
 
   if (!ready) {
     return (
       <div className="flex h-screen items-center justify-center bg-cream text-ink/40">Loading…</div>
     );
-  }
-
-  // The "creating" and real "connect" screens render full-bleed (no stepper).
-  if (
-    pathname.startsWith("/onboarding/creating") ||
-    pathname.startsWith("/onboarding/connect")
-  ) {
-    return <div className="min-h-screen bg-cream">{children}</div>;
   }
 
   return (

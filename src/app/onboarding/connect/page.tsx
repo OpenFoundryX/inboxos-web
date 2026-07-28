@@ -103,8 +103,12 @@ export default function ConnectPage() {
         >
           Refresh status
         </button>
-        <Button variant="dark" disabled={!bothConnected} onClick={() => router.replace("/dashboard")}>
-          Continue to dashboard
+        <Button
+          variant="dark"
+          disabled={!bothConnected}
+          onClick={() => router.replace("/onboarding/mail")}
+        >
+          Continue
         </Button>
       </div>
       <p className="mt-4 text-center text-xs text-ink/40">
