@@ -168,7 +168,7 @@ export default function CategoriesStep() {
   return (
     <StepShell
       title="Choose what stays in your inbox"
-      blurb="InboxOS reads each new email, labels it, and — if you want — moves the low-value ones out of the way. It never deletes anything."
+      blurb="Each message is read and labelled before it reaches you, and the low-value ones can move out of the way. Nothing is ever deleted."
       error={error}
       busy={busy}
       onContinue={onContinue}

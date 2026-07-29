@@ -27,8 +27,10 @@ export default function FeatureRow({
             {eyebrow}
           </span>
         </div>
-        <h2 className="mt-4 text-4xl font-extrabold tracking-tight">{title}</h2>
-        <p className="mt-4 max-w-md text-ink/60">{body}</p>
+        <h2 className="mt-4 font-serif text-3xl font-semibold leading-tight">
+          {title}
+        </h2>
+        <p className="mt-4 max-w-md leading-relaxed text-ink/60">{body}</p>
       </div>
       <div className={`flex justify-center ${reverse ? "md:order-1" : ""}`}>
         {children}

@@ -191,8 +191,8 @@ export default function NotetakerPage() {
 
       <div className="p-8">
         <PageHeader
-          title="Never write meeting notes again"
-          subtitle="InboxOS joins your meetings and turns them into actionable notes and follow-ups."
+          title="Meetings, written up"
+          subtitle="InboxOS sits in on your calls, keeps the notes, and turns what was decided into follow-ups."
         />
 
         {!configured ? (

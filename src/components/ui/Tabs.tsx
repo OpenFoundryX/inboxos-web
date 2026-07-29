@@ -16,7 +16,7 @@ export default function Tabs({ tabs, active, onChange, className = "" }: TabsPro
           type="button"
           onClick={() => onChange(tab)}
           className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition-colors ${
-            active === tab ? "bg-cream text-ink" : "text-ink/50 hover:text-ink"
+            active === tab ? "bg-canvas text-ink" : "text-ink/50 hover:text-ink"
           }`}
         >
           {tab}

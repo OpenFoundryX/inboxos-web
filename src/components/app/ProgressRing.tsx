@@ -20,7 +20,7 @@ export default function ProgressRing({ percent, label }: { percent: number; labe
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-2xl font-extrabold text-ink">{Math.round(percent)}%</span>
+        <span className="text-2xl font-semibold text-ink">{Math.round(percent)}%</span>
         {label ? <span className="text-xs text-ink/50">{label}</span> : null}
       </div>
     </div>

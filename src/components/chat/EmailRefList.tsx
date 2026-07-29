@@ -54,7 +54,7 @@ function Row({ email }: { email: EmailRef }) {
       href={email.href}
       target="_blank"
       rel="noopener noreferrer"
-      className={`${shared} transition-colors hover:bg-cream`}
+      className={`${shared} transition-colors hover:bg-canvas`}
     >
       {inner}
     </a>

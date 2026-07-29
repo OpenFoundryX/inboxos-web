@@ -41,7 +41,7 @@ export default function Toast({ toast, onDismiss, duration }: ToastProps) {
       <div
         key={toast.id}
         className={`animate-toast-in pointer-events-auto flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold shadow-lg ${
-          isError ? "bg-accent text-white" : "bg-ink text-cream"
+          isError ? "bg-accent text-white" : "bg-ink text-canvas"
         }`}
       >
         <span aria-hidden="true" className="text-base leading-none">

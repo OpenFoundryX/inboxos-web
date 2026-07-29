@@ -84,7 +84,7 @@ function Column({
 }) {
   return (
     <div className="overflow-hidden rounded-2xl border border-black/5">
-      <div className="border-b border-black/5 bg-cream px-4 py-3 text-sm font-semibold text-ink">
+      <div className="border-b border-black/5 bg-canvas px-4 py-3 text-sm font-semibold text-ink">
         {title}
       </div>
       <div className="divide-y divide-black/5 bg-card">

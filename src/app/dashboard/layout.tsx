@@ -30,12 +30,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (!ready) {
     return (
-      <div className="flex h-screen items-center justify-center bg-cream text-ink/40">Loading…</div>
+      <div className="flex h-screen items-center justify-center bg-canvas text-ink/40">Loading…</div>
     );
   }
 
   return (
-    <div className="flex h-screen bg-cream">
+    <div className="flex h-screen bg-canvas">
       <Sidebar />
       <div className="flex-1 overflow-y-auto">{children}</div>
     </div>

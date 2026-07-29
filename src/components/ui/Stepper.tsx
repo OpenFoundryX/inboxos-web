@@ -17,7 +17,7 @@ export default function Stepper({ value, onChange, min = 0, max = 999, suffix }:
         type="button"
         onClick={dec}
         disabled={value <= min}
-        className="flex h-9 w-9 items-center justify-center rounded-lg bg-cream text-lg text-ink disabled:opacity-40"
+        className="flex h-9 w-9 items-center justify-center rounded-lg bg-canvas text-lg text-ink disabled:opacity-40"
         aria-label="Decrease"
       >
         −
@@ -30,7 +30,7 @@ export default function Stepper({ value, onChange, min = 0, max = 999, suffix }:
         type="button"
         onClick={inc}
         disabled={value >= max}
-        className="flex h-9 w-9 items-center justify-center rounded-lg bg-cream text-lg text-ink disabled:opacity-40"
+        className="flex h-9 w-9 items-center justify-center rounded-lg bg-canvas text-lg text-ink disabled:opacity-40"
         aria-label="Increase"
       >
         +

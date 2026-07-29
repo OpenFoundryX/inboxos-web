@@ -39,7 +39,7 @@ export default function StepShell({
   return (
     <div>
       <div className="text-center">
-        <h1 className="text-[26px] font-extrabold leading-tight tracking-tight text-ink sm:text-3xl">
+        <h1 className="text-[26px] font-semibold leading-tight tracking-tight text-ink sm:text-3xl">
           {title}
         </h1>
         <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-ink/55">{blurb}</p>

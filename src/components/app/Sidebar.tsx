@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Wordmark from "@/components/ui/Wordmark";
 import TrialPill from "./TrialPill";
 import WorkspaceMenu from "./WorkspaceMenu";
 import {
@@ -33,9 +34,7 @@ export default function Sidebar() {
   return (
     <aside className="flex h-screen w-60 flex-col border-r border-black/5 bg-card p-4">
       <div className="flex items-center justify-between px-2 py-3">
-        <Link href="/dashboard" className="text-xl font-extrabold tracking-tight text-accent">
-          InboxOS
-        </Link>
+        <Wordmark size="md" href="/dashboard" />
         <button className="text-ink/40 hover:text-ink" aria-label="Notifications">
           <BellIcon className="h-5 w-5" />
         </button>

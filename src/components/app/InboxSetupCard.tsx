@@ -14,10 +14,10 @@ function StatRow({
 }) {
   return (
     <div className="flex items-center gap-3">
-      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-cream text-ink/50">
+      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-canvas text-ink/50">
         {icon}
       </span>
-      <span className="text-xl font-extrabold text-ink">{value}</span>
+      <span className="text-xl font-semibold text-ink">{value}</span>
       <span className="text-sm text-ink/60">{label}</span>
     </div>
   );
@@ -34,18 +34,18 @@ export default function InboxSetupCard({
 
   return (
     <section>
-      <h2 className="text-lg font-extrabold tracking-tight text-ink">
+      <h2 className="text-lg font-semibold tracking-tight text-ink">
         {ready ? "Your inbox is set up" : "Setting up your inbox"}
       </h2>
       <p className="mt-1 text-sm text-ink/50">
         {ready
-          ? "InboxOS has categorized your emails and created reply drafts. Head to Gmail to review them."
-          : "We're categorizing the mail already in your inbox. This usually takes a few minutes."}
+          ? "Your mail is labelled and the drafts are written. Open Gmail whenever you're ready to review them."
+          : "Working through the mail already in your inbox. This usually takes a few minutes."}
       </p>
 
       <Card className="mt-4 overflow-hidden">
         <div className="flex flex-col sm:flex-row">
-          <div className="flex items-center justify-center bg-cream/60 p-8 sm:w-56">
+          <div className="flex items-center justify-center bg-canvas/60 p-8 sm:w-56">
             <ProgressRing percent={ready ? 100 : 60} label={ready ? "complete" : "working"} />
           </div>
           <div className="flex flex-1 flex-col justify-center gap-4 p-8">

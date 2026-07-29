@@ -52,7 +52,7 @@ export default function RadioGroup({ options, value, onChange }: RadioGroupProps
                     <span
                       key={tag}
                       className={`rounded-full px-2.5 py-1 text-[11px] font-medium transition-colors ${
-                        selected ? "bg-white text-ink/60" : "bg-cream text-ink/50"
+                        selected ? "bg-white text-ink/60" : "bg-canvas text-ink/50"
                       }`}
                     >
                       {tag}

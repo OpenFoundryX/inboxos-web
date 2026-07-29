@@ -99,7 +99,7 @@ export default function MailStep() {
   return (
     <StepShell
       title="When should we deliver your email?"
-      blurb="InboxOS holds new mail and hands it to you in batches, so you read email when you choose to instead of the moment it arrives. Anyone on your VIP list always comes straight through."
+      blurb="InboxOS holds new mail and hands it over in batches, so you read email when you choose to rather than the moment it arrives. Anyone on your VIP list always comes straight through."
       error={error}
       busy={busy}
       onContinue={onContinue}

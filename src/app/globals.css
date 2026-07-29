@@ -7,7 +7,7 @@ html {
 }
 
 body {
-  background-color: theme("colors.cream");
+  background-color: theme("colors.canvas");
   color: theme("colors.ink");
   -webkit-font-smoothing: antialiased;
 }

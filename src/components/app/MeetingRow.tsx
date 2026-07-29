@@ -32,8 +32,8 @@ export default function MeetingRow({
           aria-label={`Notetaker for ${item.title ?? "this meeting"}`}
           className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${
             item.bot_on
-              ? "border-ink/10 bg-cream text-ink"
-              : "border-transparent bg-cream text-ink/35"
+              ? "border-ink/10 bg-canvas text-ink"
+              : "border-transparent bg-canvas text-ink/35"
           } ${item.bot_editable ? "hover:border-ink/25" : "cursor-not-allowed opacity-60"}`}
         >
           {item.bot_on ? "Joining" : "Off"}

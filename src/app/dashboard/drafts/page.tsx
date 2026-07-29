@@ -122,7 +122,7 @@ export default function DraftsPage() {
               <textarea
                 onChange={mark}
                 placeholder="Write your default signature…"
-                className="h-32 w-full resize-none rounded-xl border border-black/10 bg-cream p-3 text-sm text-ink placeholder:text-ink/40 focus:outline-none"
+                className="h-32 w-full resize-none rounded-xl border border-black/10 bg-canvas p-3 text-sm text-ink placeholder:text-ink/40 focus:outline-none"
               />
             </Card>
           </div>

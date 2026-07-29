@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import Link from "next/link";
 import { checkAccess } from "@/lib/session";
+import Wordmark from "@/components/ui/Wordmark";
 import OnboardingStepper from "@/components/onboarding/OnboardingStepper";
 import { SettingsIcon } from "@/components/app/icons";
 
@@ -48,14 +48,14 @@ export default function OnboardingLayout({ children }: { children: React.ReactNo
 
   if (!ready) {
     return (
-      <div className="flex h-screen items-center justify-center bg-cream">
+      <div className="flex h-screen items-center justify-center bg-canvas">
         <div className="h-7 w-7 animate-spin rounded-full border-2 border-ink/15 border-t-accent" />
       </div>
     );
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-cream">
+    <div className="relative min-h-screen overflow-hidden bg-canvas">
       {/* Soft colour wash behind the card. Purely decorative, and blurred far
           enough that it never competes with the content sitting on top of it. */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
@@ -64,9 +64,7 @@ export default function OnboardingLayout({ children }: { children: React.ReactNo
       </div>
 
       <header className="absolute inset-x-0 top-0 z-10 flex items-center justify-between px-6 py-6 sm:px-10">
-        <Link href="/dashboard" className="text-lg font-extrabold tracking-tight text-accent">
-          InboxOS
-        </Link>
+        <Wordmark size="sm" href="/dashboard" />
         <SettingsIcon className="h-5 w-5 text-ink/25" />
       </header>
 

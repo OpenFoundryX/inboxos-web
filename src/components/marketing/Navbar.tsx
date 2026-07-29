@@ -1,18 +1,18 @@
 import Link from "next/link";
 import Button from "@/components/ui/Button";
+import Wordmark from "@/components/ui/Wordmark";
 
 const LINKS = [
   { href: "#how", label: "How it works" },
   { href: "#pricing", label: "Pricing" },
+  { href: "#compare", label: "Compare plans" },
 ];
 
 export default function Navbar() {
   return (
-    <header className="sticky top-0 z-50 bg-cream/80 backdrop-blur">
+    <header className="sticky top-0 z-50 bg-canvas/80 backdrop-blur">
       <nav className="mx-auto flex max-w-6xl items-center justify-between rounded-full border border-black/5 bg-card px-5 py-3 shadow-sm mt-4">
-        <Link href="/" className="text-xl font-extrabold tracking-tight text-accent">
-          InboxOS
-        </Link>
+        <Wordmark size="md" />
         <div className="hidden items-center gap-7 md:flex">
           {LINKS.map((l) => (
             <Link
@@ -29,7 +29,7 @@ export default function Navbar() {
             Log in
           </Button>
           <Button variant="primary" href="/login">
-            Start for free
+            Get started
           </Button>
         </div>
       </nav>

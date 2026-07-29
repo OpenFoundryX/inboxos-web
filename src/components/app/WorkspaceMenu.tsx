@@ -31,7 +31,7 @@ export default function WorkspaceMenu() {
       ) : null}
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center gap-3 rounded-xl border border-black/5 bg-cream px-3 py-2 text-left hover:border-ink/15"
+        className="flex w-full items-center gap-3 rounded-xl border border-black/5 bg-canvas px-3 py-2 text-left hover:border-ink/15"
       >
         <span className="flex h-8 w-8 items-center justify-center rounded-full bg-accent/15 text-xs font-bold text-accent">
           NP

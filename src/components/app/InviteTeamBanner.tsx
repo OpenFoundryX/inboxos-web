@@ -22,15 +22,15 @@ export default function InviteTeamBanner() {
   if (!visible) return null;
 
   return (
-    <div className="flex items-center justify-between gap-4 rounded-2xl bg-cream px-5 py-4">
+    <div className="flex items-center justify-between gap-4 rounded-2xl bg-canvas px-5 py-4">
       <div className="min-w-0">
-        <div className="flex items-center gap-2 text-sm font-bold text-ink">
+        <div className="flex items-center gap-2 text-sm font-semibold text-ink">
           <UsersIcon className="h-4 w-4 text-ink/60" />
-          InboxOS gets smarter when your whole team uses it
+          Works better with your team on it
         </div>
         <div className="mt-1 text-xs text-ink/50">
-          Invite your team to share meeting notes, unlock smarter drafts and save time scheduling
-          meetings.
+          Shared meeting notes, drafts with more context to work from, and scheduling that
+          already knows everyone&apos;s hours.
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-2">

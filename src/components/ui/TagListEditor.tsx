@@ -39,7 +39,7 @@ export default function TagListEditor({
       <div className="mb-2 text-sm font-medium text-ink/70">{label}</div>
       <div className="flex flex-wrap gap-2">
         {values.map((v) => (
-          <span key={v} className="flex items-center gap-1.5 rounded-full bg-cream px-3 py-1 text-xs text-ink">
+          <span key={v} className="flex items-center gap-1.5 rounded-full bg-canvas px-3 py-1 text-xs text-ink">
             {v}
             <button
               type="button"
@@ -72,7 +72,7 @@ export default function TagListEditor({
           type="button"
           onClick={add}
           disabled={disabled}
-          className="flex h-9 w-9 items-center justify-center rounded-xl bg-cream text-ink hover:bg-ink/5 disabled:opacity-50"
+          className="flex h-9 w-9 items-center justify-center rounded-xl bg-canvas text-ink hover:bg-ink/5 disabled:opacity-50"
           aria-label="Add"
         >
           <PlusIcon className="h-4 w-4" />

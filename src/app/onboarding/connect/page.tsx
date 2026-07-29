@@ -64,7 +64,7 @@ export default function ConnectPage() {
   return (
     <StepShell
       title="Connect your accounts"
-      blurb="InboxOS needs access to your Gmail and Google Calendar to organize your inbox and help you schedule meetings."
+      blurb="InboxOS needs access to Gmail to hold and sort your mail, and to Google Calendar to handle scheduling."
       error={error}
       busy={false}
       continueDisabled={!bothConnected}

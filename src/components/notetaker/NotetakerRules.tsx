@@ -154,7 +154,7 @@ export default function NotetakerRules({ settings, disabled, onChange }: Props) 
       </Card>
 
       <Card className="overflow-hidden">
-        <div className="border-b border-black/5 bg-cream/50 px-5 py-3 text-sm font-semibold text-ink">
+        <div className="border-b border-black/5 bg-canvas/50 px-5 py-3 text-sm font-semibold text-ink">
           After the meeting
         </div>
         <SwitchRow

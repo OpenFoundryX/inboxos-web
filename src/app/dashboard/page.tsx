@@ -30,7 +30,7 @@ function greeting(): string {
 function TopbarActions({ onRefresh }: { onRefresh: () => void }) {
   return (
     <>
-      <button className="flex items-center gap-1 rounded-full border border-ink/10 bg-cream px-3 py-1.5 text-sm font-medium text-ink/70">
+      <button className="flex items-center gap-1 rounded-full border border-ink/10 bg-canvas px-3 py-1.5 text-sm font-medium text-ink/70">
         Personal
         <ChevronDownIcon className="h-4 w-4" />
       </button>
@@ -149,7 +149,7 @@ export default function DashboardHome() {
         ) : (
           <div className="mx-auto max-w-4xl space-y-10">
             <div className="mx-auto max-w-2xl pt-4 text-center">
-              <h2 className="mb-6 text-2xl font-extrabold tracking-tight">
+              <h2 className="mb-6 text-2xl font-semibold tracking-tight">
                 {greeting()}, {data.user.first_name}. Anything you&apos;d like to know?
               </h2>
               <AskBar onSubmit={() => router.push("/dashboard/chat")} />
@@ -160,7 +160,7 @@ export default function DashboardHome() {
             <InviteTeamBanner />
 
             <div>
-              <h3 className="mb-3 text-lg font-extrabold tracking-tight text-ink">Your meetings</h3>
+              <h3 className="mb-3 text-lg font-semibold tracking-tight text-ink">Your meetings</h3>
               <MeetingsPanel meetings={data.meetings} onToggle={toggleBot} />
             </div>
           </div>

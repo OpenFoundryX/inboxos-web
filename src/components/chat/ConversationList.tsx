@@ -41,7 +41,7 @@ export default function ConversationList({
 
   return (
     <aside className="flex w-72 shrink-0 flex-col border-r border-black/5 bg-card p-4">
-      <label className="mb-3 flex items-center gap-2 rounded-xl border border-black/10 bg-cream px-3 py-2 text-sm">
+      <label className="mb-3 flex items-center gap-2 rounded-xl border border-black/10 bg-canvas px-3 py-2 text-sm">
         <SearchIcon className="h-4 w-4 text-ink/40" />
         <input
           value={query}
@@ -73,8 +73,8 @@ export default function ConversationList({
                 onClick={() => onSelect(c.id)}
                 className={`w-full truncate rounded-xl px-3 py-2 pr-9 text-left text-sm ${
                   c.id === activeId
-                    ? "bg-cream font-medium text-ink"
-                    : "text-ink/70 hover:bg-cream hover:text-ink"
+                    ? "bg-canvas font-medium text-ink"
+                    : "text-ink/70 hover:bg-canvas hover:text-ink"
                 }`}
               >
                 {c.title}

@@ -232,7 +232,7 @@ export default function ChatPage() {
       <main className="flex flex-1 flex-col overflow-hidden">
         {empty ? (
           <div className="flex flex-1 flex-col items-center justify-center p-8">
-            <span className="mb-8 text-3xl font-extrabold tracking-tight text-accent">
+            <span className="mb-8 text-3xl font-semibold tracking-tight text-accent">
               InboxOS
             </span>
             <div className="w-full max-w-2xl">
@@ -259,7 +259,7 @@ export default function ChatPage() {
                 onActionsResolved={resolveActions}
               />
             </div>
-            <div className="border-t border-black/5 bg-cream px-4 py-4">
+            <div className="border-t border-black/5 bg-canvas px-4 py-4">
               <div className="mx-auto w-full max-w-3xl">
                 <AskBar
                   onSubmit={(t) => void ask(t)}

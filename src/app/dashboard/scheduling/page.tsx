@@ -58,7 +58,7 @@ export default function SchedulingPage() {
             <div className="grid gap-4 md:grid-cols-3">
               {FEATURES.map((f) => (
                 <Card key={f.title} className="p-6">
-                  <div className="mb-4 h-16 rounded-xl bg-cream" />
+                  <div className="mb-4 h-16 rounded-xl bg-canvas" />
                   <div className="text-sm font-bold text-ink">{f.title}</div>
                   <div className="mt-2 text-xs text-ink/50">{f.desc}</div>
                 </Card>

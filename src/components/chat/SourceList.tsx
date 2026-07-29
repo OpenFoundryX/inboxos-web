@@ -57,7 +57,7 @@ export default function SourceList({ sources }: { sources: ChatSource[] }) {
                     href={href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block rounded-lg px-2 py-1.5 hover:bg-cream"
+                    className="block rounded-lg px-2 py-1.5 hover:bg-canvas"
                   >
                     {content}
                   </a>

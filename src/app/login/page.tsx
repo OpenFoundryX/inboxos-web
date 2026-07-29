@@ -1,9 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
+import Wordmark from "@/components/ui/Wordmark";
 import { signIn, isOnboarded } from "@/lib/auth";
 import { backendConfigured, startGoogleLogin } from "@/lib/session";
 
@@ -22,25 +22,24 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-cream px-6">
-      <Link href="/" className="mb-8 text-2xl font-extrabold tracking-tight text-accent">
-        InboxOS
-      </Link>
+    <main className="flex min-h-screen flex-col items-center justify-center bg-canvas px-6">
+      <div className="mb-8">
+        <Wordmark size="lg" />
+      </div>
       <Card className="w-full max-w-sm p-8 text-center shadow-sm">
-        <h1 className="text-2xl font-bold">Welcome back</h1>
-        <p className="mt-2 text-sm text-ink/60">Sign in to organize your inbox.</p>
+        <h1 className="font-serif text-2xl font-semibold">Welcome back</h1>
+        <p className="mt-2 text-sm leading-relaxed text-ink/60">
+          Sign in to pick up where your inbox left off.
+        </p>
         <div className="mt-8 space-y-3">
           <Button variant="dark" onClick={handleGoogle} className="w-full">
             Continue with Google
           </Button>
-          <Button
-            variant="outline"
-            onClick={configured ? undefined : mockSignIn}
-            disabled={configured}
-            className="w-full"
-          >
-            Continue with Outlook
-          </Button>
+          {!configured && (
+            <Button variant="outline" onClick={mockSignIn} className="w-full">
+              Continue without a backend
+            </Button>
+          )}
         </div>
         <p className="mt-6 text-xs text-ink/40">
           {configured
