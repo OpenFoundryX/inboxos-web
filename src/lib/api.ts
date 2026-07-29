@@ -26,17 +26,60 @@ async function errorMessage(res: Response): Promise<string> {
   return `Request failed: ${res.status}`;
 }
 
-export async function apiFetch<T>(
-  path: string,
-  init?: RequestInit,
-): Promise<T> {
-  const res = await fetch(`/api${path}`, {
+/** The one request that must never trigger the refresh-and-replay below —
+ *  refreshing a refresh would recurse. */
+const REFRESH_PATH = "/auth/refresh";
+
+/** In-flight refresh, shared by every caller that 401s at the same moment.
+ *
+ *  This has to be deduplicated. The backend spends refresh tokens single-use
+ *  (`oauth.rotate_refresh_token` revokes the row it just used), and the app
+ *  fans out parallel requests all over — `checkAccess` alone fires /auth/me
+ *  then gmail+calendar status together. Unguarded, N simultaneous 401s send N
+ *  refreshes, and which way that breaks depends on timing: bunched together
+ *  they all read the row before any of them commits and all succeed, leaving
+ *  N-1 orphaned tokens and a cookie jar holding whichever Set-Cookie landed
+ *  last; spread far enough apart that the first one commits, the rest present
+ *  a spent token, 401, and bounce a perfectly valid session to /login.
+ *  One shared refresh avoids having to care which. */
+let refreshInFlight: Promise<boolean> | null = null;
+
+function refreshSession(): Promise<boolean> {
+  refreshInFlight ??= fetch(`/api${REFRESH_PATH}`, { method: "POST" })
+    .then((res) => res.ok)
+    .catch(() => false)
+    .finally(() => {
+      refreshInFlight = null;
+    });
+  return refreshInFlight;
+}
+
+function send(path: string, init?: RequestInit): Promise<Response> {
+  return fetch(`/api${path}`, {
     ...init,
     headers: {
       "Content-Type": "application/json",
       ...(init?.headers ?? {}),
     },
   });
+}
+
+export async function apiFetch<T>(
+  path: string,
+  init?: RequestInit,
+): Promise<T> {
+  let res = await send(path, init);
+
+  // Access cookies last 30 minutes, refresh cookies 30 days. Both are httpOnly,
+  // so expiry is invisible from here — a 401 is the only signal we get, and the
+  // recovery is one refresh then one replay. Replaying is safe because every
+  // body in this app is an already-serialized string, not a stream.
+  if (res.status === 401 && path !== REFRESH_PATH) {
+    if (await refreshSession()) {
+      res = await send(path, init);
+    }
+  }
+
   if (!res.ok) {
     throw new ApiError(res.status, await errorMessage(res));
   }
