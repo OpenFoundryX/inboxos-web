@@ -14,10 +14,29 @@ export default function OnboardingLayout({ children }: { children: React.ReactNo
 
   useEffect(() => {
     let active = true;
-    checkAccess().then(({ authed }) => {
+    checkAccess().then(({ authed, connected, onboarded }) => {
       if (!active) return;
       if (!authed) {
         router.replace("/login");
+        return;
+      }
+      // Missing grants come first, and outrank `onboarded`: connect is the only
+      // screen in the app that can re-grant Gmail/Calendar, so an already-
+      // onboarded user whose access was revoked has to be able to reach it. Its
+      // Continue goes to /onboarding/mail, which bounces such a user on to the
+      // dashboard, so the flow still terminates.
+      if (!connected) {
+        if (!pathname.startsWith("/onboarding/connect")) {
+          router.replace("/onboarding/connect");
+          return;
+        }
+        setReady(true);
+        return;
+      }
+      // Connected and already finished → the wizard is not somewhere to wander
+      // back into.
+      if (onboarded) {
+        router.replace("/dashboard");
         return;
       }
       setReady(true);
@@ -25,20 +44,12 @@ export default function OnboardingLayout({ children }: { children: React.ReactNo
     return () => {
       active = false;
     };
-  }, [router]);
+  }, [router, pathname]);
 
   if (!ready) {
     return (
       <div className="flex h-screen items-center justify-center bg-cream text-ink/40">Loading…</div>
     );
-  }
-
-  // The "creating" and real "connect" screens render full-bleed (no stepper).
-  if (
-    pathname.startsWith("/onboarding/creating") ||
-    pathname.startsWith("/onboarding/connect")
-  ) {
-    return <div className="min-h-screen bg-cream">{children}</div>;
   }
 
   return (

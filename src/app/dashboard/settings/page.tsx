@@ -13,7 +13,7 @@ export default function SettingsPage() {
 
   function replay() {
     resetOnboarding();
-    router.replace("/onboarding/creating");
+    router.replace("/onboarding/mail");
   }
 
   async function handleSignOut() {
@@ -41,17 +41,19 @@ export default function SettingsPage() {
             </div>
           </Card>
 
-          <Card className="flex items-center justify-between p-5">
-            <div>
-              <div className="text-sm font-bold text-ink">Replay onboarding</div>
-              <div className="text-xs text-ink/50">
-                Reset the setup flow and walk through onboarding again.
+          {backendConfigured() ? null : (
+            <Card className="flex items-center justify-between p-5">
+              <div>
+                <div className="text-sm font-bold text-ink">Replay onboarding</div>
+                <div className="text-xs text-ink/50">
+                  Reset the setup flow and walk through onboarding again.
+                </div>
               </div>
-            </div>
-            <Button variant="outline" onClick={replay}>
-              Replay
-            </Button>
-          </Card>
+              <Button variant="outline" onClick={replay}>
+                Replay
+              </Button>
+            </Card>
+          )}
 
           <Card className="flex items-center justify-between p-5">
             <div>

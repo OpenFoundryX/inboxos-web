@@ -13,7 +13,7 @@ export default function LoginPage() {
 
   function mockSignIn() {
     signIn();
-    router.replace(isOnboarded() ? "/dashboard" : "/onboarding/creating");
+    router.replace(isOnboarded() ? "/dashboard" : "/onboarding/mail");
   }
 
   function handleGoogle() {

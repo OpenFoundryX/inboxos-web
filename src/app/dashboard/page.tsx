@@ -18,6 +18,7 @@ import {
   type AgendaItem,
   type DashboardSummary,
 } from "@/lib/dashboard";
+import { BATCHING_FAILED_KEY } from "@/lib/onboarding";
 
 function greeting(): string {
   const h = new Date().getHours();
@@ -74,6 +75,18 @@ export default function DashboardHome() {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Set by the last onboarding step when startBatching() failed. Read once, so
+  // it does not nag on every dashboard visit.
+  useEffect(() => {
+    if (window.sessionStorage.getItem(BATCHING_FAILED_KEY) !== "1") return;
+    window.sessionStorage.removeItem(BATCHING_FAILED_KEY);
+    setToast({
+      id: Date.now(),
+      text: "Couldn't turn on batched delivery. Turn it on from Mailman settings.",
+      variant: "error",
+    });
+  }, []);
 
   /** Flip the pill immediately, then reconcile. On failure we re-fetch rather
    *  than hand-rolling an undo: the server may have partly applied the change,

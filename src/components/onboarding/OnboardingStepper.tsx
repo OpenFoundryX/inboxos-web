@@ -4,9 +4,10 @@ import { usePathname } from "next/navigation";
 import { CheckIcon } from "@/components/app/icons";
 
 const STEPS = [
-  { href: "/onboarding/calendar", label: "Connect calendar" },
-  { href: "/onboarding/inbox", label: "Inbox setup" },
-  { href: "/onboarding/notes", label: "Meeting notes" },
+  { href: "/onboarding/connect", label: "Connect accounts" },
+  { href: "/onboarding/mail", label: "Scheduled mail" },
+  { href: "/onboarding/categories", label: "Inbox labels" },
+  { href: "/onboarding/notetaker", label: "Meeting notes" },
 ];
 
 export default function OnboardingStepper() {

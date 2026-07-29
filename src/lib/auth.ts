@@ -1,6 +1,17 @@
 const KEY = "inboxos_authed";
 const ONBOARDED = "inboxos_onboarded";
-const INBOX_PREF = "inboxos_inbox_pref";
+
+/** The scheduled-mail step's answer, read by the last step. It lives here, with
+ *  the other browser-storage keys, so `signOut()` can clear it — left behind it
+ *  survives a sign-out and an account switch on a shared browser. Re-exported
+ *  from `lib/onboarding`, which is where the steps import it from. */
+export const BATCHING_CHOICE_KEY = "inboxos_batching_choice";
+
+/** The inbox-labels step's answer, and the same story: a freshly seeded taxonomy
+ *  is identical to what "All my emails" writes, so "never answered" cannot be
+ *  read back from the API. Lives here for the same reason, cleared in the same
+ *  two places. */
+export const CATEGORIES_CHOICE_KEY = "inboxos_categories_choice";
 
 function setFlag(key: string) {
   window.localStorage.setItem(key, "1");
@@ -21,7 +32,10 @@ export function signOut(): void {
   if (typeof window === "undefined") return;
   clearFlag(KEY);
   clearFlag(ONBOARDED);
-  window.localStorage.removeItem(INBOX_PREF);
+  // Not flag+cookie pairs, just localStorage values — but they are wizard state
+  // and must not outlive the session that answered.
+  window.localStorage.removeItem(BATCHING_CHOICE_KEY);
+  window.localStorage.removeItem(CATEGORIES_CHOICE_KEY);
 }
 
 export function isAuthed(): boolean {
@@ -42,5 +56,4 @@ export function setOnboarded(): void {
 export function resetOnboarding(): void {
   if (typeof window === "undefined") return;
   clearFlag(ONBOARDED);
-  window.localStorage.removeItem(INBOX_PREF);
 }
