@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import RadioGroup, { type RadioOption } from "@/components/ui/RadioGroup";
 import StepShell from "@/components/onboarding/StepShell";
 import { backendConfigured } from "@/lib/session";
 import { CATEGORIES_CHOICE_KEY } from "@/lib/onboarding";
@@ -22,24 +23,23 @@ const ATTENTION_KEEP = ["to_do", "to_follow_up", "fyi", "notification"];
 const ATTENTION_ARCHIVE = ["marketing", "noise"];
 const ALL_KEYS = [...ATTENTION_KEEP, ...ATTENTION_ARCHIVE];
 
-const OPTIONS: { value: Choice; title: string; subtitle: string; tags: string[] }[] = [
+const OPTIONS: RadioOption[] = [
   {
     value: "attention",
-    title: "Only what needs my attention",
-    subtitle: "Marketing and noise get labelled and archived out of your inbox.",
+    label: "Only what needs my attention",
+    description: "Marketing and noise get labelled and archived out of your inbox.",
     tags: ["To do", "To follow up", "FYI", "Notification"],
   },
   {
     value: "all",
-    title: "All my emails",
-    subtitle: "Everything gets a label, nothing leaves your inbox.",
+    label: "All my emails",
+    description: "Everything gets a label, nothing leaves your inbox.",
     tags: ["To do", "To follow up", "FYI", "Notification", "Marketing", "Noise"],
   },
   {
     value: "none",
-    title: "Don't label my emails",
-    subtitle: "Keep your inbox exactly as it is.",
-    tags: [],
+    label: "Don't label my emails",
+    description: "Keep your inbox exactly as it is.",
   },
 ];
 
@@ -172,35 +172,9 @@ export default function CategoriesStep() {
       error={error}
       busy={busy}
       onContinue={onContinue}
-      onSkip={onSkip}
+      onSecondary={onSkip}
     >
-      <div className="space-y-3">
-        {OPTIONS.map((opt) => {
-          const active = opt.value === choice;
-          return (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => pick(opt.value)}
-              className={`w-full rounded-2xl border p-4 text-left transition-colors ${
-                active ? "border-ink bg-card" : "border-black/5 bg-card hover:border-ink/20"
-              }`}
-            >
-              <div className="text-sm font-bold text-ink">{opt.title}</div>
-              <div className="mt-0.5 text-xs text-ink/50">{opt.subtitle}</div>
-              {opt.tags.length > 0 ? (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {opt.tags.map((t) => (
-                    <span key={t} className="rounded-full bg-cream px-2.5 py-1 text-xs text-ink/60">
-                      {t}
-                    </span>
-                  ))}
-                </div>
-              ) : null}
-            </button>
-          );
-        })}
-      </div>
+      <RadioGroup options={OPTIONS} value={choice} onChange={(v) => pick(v as Choice)} />
     </StepShell>
   );
 }

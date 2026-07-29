@@ -88,9 +88,12 @@ export default function NotetakerStep() {
 
   if (applying) {
     return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-8">
+      <div className="flex flex-col items-center justify-center gap-6 py-6">
         <Orbit />
-        <p className="text-lg font-semibold text-ink">Setting up your workspace…</p>
+        <div className="text-center">
+          <p className="text-lg font-bold tracking-tight text-ink">Setting up your workspace…</p>
+          <p className="mt-1.5 text-sm text-ink/50">This only takes a moment.</p>
+        </div>
       </div>
     );
   }
@@ -103,7 +106,7 @@ export default function NotetakerStep() {
       busy={busy}
       continueLabel="Finish setup"
       onContinue={() => finish(true)}
-      onSkip={() => finish(false)}
+      onSecondary={() => finish(false)}
     >
       <RadioGroup options={OPTIONS} value={choice} onChange={(v) => setChoice(v as Choice)} />
     </StepShell>

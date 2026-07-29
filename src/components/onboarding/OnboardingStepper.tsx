@@ -1,7 +1,6 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { CheckIcon } from "@/components/app/icons";
 
 const STEPS = [
   { href: "/onboarding/connect", label: "Connect accounts" },
@@ -10,38 +9,35 @@ const STEPS = [
   { href: "/onboarding/notetaker", label: "Meeting notes" },
 ];
 
+/** Progress rail above the card: one bar per step, filled up to where you are.
+ *  A horizontal rail reads at any width, so unlike the old sidebar it doesn't
+ *  vanish on narrow screens — and it leaves the card centred on its own. */
 export default function OnboardingStepper() {
   const pathname = usePathname();
-  const activeIndex = STEPS.findIndex((s) => pathname.startsWith(s.href));
+  const found = STEPS.findIndex((s) => pathname.startsWith(s.href));
+  const activeIndex = found === -1 ? 0 : found;
 
   return (
-    <ol className="space-y-1">
-      {STEPS.map((step, i) => {
-        const done = i < activeIndex;
-        const active = i === activeIndex;
-        return (
-          <li key={step.href} className="flex items-center gap-3 py-2">
+    <div className="w-full">
+      <div className="flex items-baseline justify-between gap-4">
+        <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-ink/35">
+          Step {activeIndex + 1} of {STEPS.length}
+        </span>
+        <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-accent">
+          {STEPS[activeIndex].label}
+        </span>
+      </div>
+      <div className="mt-3 flex gap-1.5">
+        {STEPS.map((step, i) => (
+          <span key={step.href} className="h-1 flex-1 overflow-hidden rounded-full bg-ink/10">
             <span
-              className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${
-                done
-                  ? "bg-accent text-white"
-                  : active
-                    ? "border-2 border-accent text-accent"
-                    : "border-2 border-ink/15 text-ink/30"
+              className={`block h-full rounded-full bg-accent transition-[width] duration-500 ease-out ${
+                i <= activeIndex ? "w-full" : "w-0"
               }`}
-            >
-              {done ? <CheckIcon className="h-3.5 w-3.5" /> : i + 1}
-            </span>
-            <span
-              className={`text-sm font-medium ${
-                active ? "text-ink" : done ? "text-ink/60" : "text-ink/30"
-              }`}
-            >
-              {step.label}
-            </span>
-          </li>
-        );
-      })}
-    </ol>
+            />
+          </span>
+        ))}
+      </div>
+    </div>
   );
 }

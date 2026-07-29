@@ -48,24 +48,42 @@ export default function OnboardingLayout({ children }: { children: React.ReactNo
 
   if (!ready) {
     return (
-      <div className="flex h-screen items-center justify-center bg-cream text-ink/40">Loading…</div>
+      <div className="flex h-screen items-center justify-center bg-cream">
+        <div className="h-7 w-7 animate-spin rounded-full border-2 border-ink/15 border-t-accent" />
+      </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-cream">
-      <header className="flex items-center justify-between px-8 py-6">
-        <Link href="/dashboard" className="text-xl font-extrabold tracking-tight text-accent">
+    <div className="relative min-h-screen overflow-hidden bg-cream">
+      {/* Soft colour wash behind the card. Purely decorative, and blurred far
+          enough that it never competes with the content sitting on top of it. */}
+      <div aria-hidden className="pointer-events-none absolute inset-0">
+        <div className="absolute -top-48 left-1/2 h-[36rem] w-[36rem] -translate-x-1/2 rounded-full bg-accent/15 blur-[130px]" />
+        <div className="absolute -bottom-56 -right-40 h-[34rem] w-[34rem] rounded-full bg-blue-400/15 blur-[130px]" />
+      </div>
+
+      <header className="absolute inset-x-0 top-0 z-10 flex items-center justify-between px-6 py-6 sm:px-10">
+        <Link href="/dashboard" className="text-lg font-extrabold tracking-tight text-accent">
           InboxOS
         </Link>
-        <SettingsIcon className="h-5 w-5 text-ink/30" />
+        <SettingsIcon className="h-5 w-5 text-ink/25" />
       </header>
-      <div className="mx-auto flex max-w-5xl gap-10 px-8 pb-16">
-        <aside className="hidden w-56 shrink-0 pt-6 md:block">
+
+      {/* The wizard is one thing to look at, so it sits in the middle of the
+          viewport rather than hugging the top. py-24 keeps it clear of the
+          header once a tall step stops fitting in the centred space. */}
+      <main className="relative flex min-h-screen items-center justify-center px-5 py-24">
+        <div className="w-full max-w-xl">
           <OnboardingStepper />
-        </aside>
-        <main className="flex-1">{children}</main>
-      </div>
+          <div
+            key={pathname}
+            className="animate-step-in mt-5 rounded-[28px] border border-white/60 bg-card/80 p-6 shadow-[0_1px_2px_rgba(26,29,38,0.04),0_24px_70px_-28px_rgba(26,29,38,0.35)] backdrop-blur-xl sm:p-9"
+          >
+            {children}
+          </div>
+        </div>
+      </main>
     </div>
   );
 }

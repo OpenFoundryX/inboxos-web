@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
+import StepShell from "@/components/onboarding/StepShell";
 import { CheckIcon } from "@/components/app/icons";
 import { backendConfigured } from "@/lib/session";
 import {
@@ -59,67 +59,43 @@ export default function ConnectPage() {
 
   const bothConnected = gmail && calendar;
 
-  // Same two-column rhythm as StepShell, which owns steps 2-4: question on the
-  // left, the thing to act on plus the buttons on the right. Not StepShell
-  // itself — this step has no "Skip for now" (nothing works without both
-  // grants) and its Continue stays disabled until they land.
+  // StepShell, like steps 2-4 — but with the skip swapped for "Refresh status"
+  // (nothing works without both grants) and Continue held until they land.
   return (
-    <div className="grid gap-6 md:grid-cols-2">
-      <div className="pt-4">
-        <h1 className="text-2xl font-extrabold tracking-tight">Connect your accounts</h1>
-        <p className="mt-4 text-sm text-ink/60">
-          InboxOS needs access to your Gmail and Google Calendar to organize your inbox and help
-          you schedule meetings.
-        </p>
-        <p className="mt-10 text-xs text-ink/40">
-          You&apos;ll be sent to grant access, then returned here.
-        </p>
+    <StepShell
+      title="Connect your accounts"
+      blurb="InboxOS needs access to your Gmail and Google Calendar to organize your inbox and help you schedule meetings."
+      error={error}
+      busy={false}
+      continueDisabled={!bothConnected}
+      onContinue={() => router.replace("/onboarding/mail")}
+      secondaryLabel="Refresh status"
+      onSecondary={refresh}
+      footnote="You'll be sent to grant access, then returned here."
+    >
+      <div className="space-y-2.5">
+        <ServiceRow
+          title="Gmail"
+          desc="Read, organize, and draft replies."
+          letter="M"
+          badgeClass="bg-accent/15 text-accent"
+          connected={gmail}
+          busy={busy === "gmail"}
+          loading={loading}
+          onConnect={() => connect("gmail")}
+        />
+        <ServiceRow
+          title="Google Calendar"
+          desc="Suggest availability and schedule meetings."
+          letter="C"
+          badgeClass="bg-blue-500/15 text-blue-600"
+          connected={calendar}
+          busy={busy === "calendar"}
+          loading={loading}
+          onConnect={() => connect("calendar")}
+        />
       </div>
-      <div>
-        <div className="space-y-3">
-          <ServiceRow
-            title="Gmail"
-            desc="Read, organize, and draft replies."
-            letter="M"
-            badgeClass="bg-accent/15 text-accent"
-            connected={gmail}
-            busy={busy === "gmail"}
-            loading={loading}
-            onConnect={() => connect("gmail")}
-          />
-          <ServiceRow
-            title="Google Calendar"
-            desc="Suggest availability and schedule meetings."
-            letter="C"
-            badgeClass="bg-blue-500/15 text-blue-600"
-            connected={calendar}
-            busy={busy === "calendar"}
-            loading={loading}
-            onConnect={() => connect("calendar")}
-          />
-        </div>
-
-        {error ? (
-          <Card className="mt-4 border border-accent/30 p-4 text-sm text-accent-dark">{error}</Card>
-        ) : null}
-
-        <Button
-          variant="dark"
-          disabled={!bothConnected}
-          onClick={() => router.replace("/onboarding/mail")}
-          className="mt-4 w-full"
-        >
-          Continue
-        </Button>
-        <button
-          type="button"
-          onClick={refresh}
-          className="mt-3 w-full text-sm font-medium text-ink/50 hover:text-ink"
-        >
-          Refresh status
-        </button>
-      </div>
-    </div>
+    </StepShell>
   );
 }
 
@@ -143,28 +119,36 @@ function ServiceRow({
   onConnect: () => void;
 }) {
   return (
-    <Card className="flex items-center justify-between p-5">
-      <div className="flex items-center gap-3">
-        <div className={`flex h-11 w-11 items-center justify-center rounded-xl text-sm font-bold ${badgeClass}`}>
+    <div
+      className={`flex items-center justify-between gap-3 rounded-2xl border p-4 transition duration-200 ${
+        connected
+          ? "border-emerald-500/30 bg-emerald-500/[0.05]"
+          : "border-black/[0.07] bg-card"
+      }`}
+    >
+      <div className="flex min-w-0 items-center gap-3">
+        <div
+          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-sm font-bold ${badgeClass}`}
+        >
           {letter}
         </div>
-        <div>
-          <div className="text-sm font-bold text-ink">{title}</div>
-          <div className="text-xs text-ink/50">{desc}</div>
+        <div className="min-w-0">
+          <div className="text-sm font-semibold text-ink">{title}</div>
+          <div className="truncate text-xs text-ink/50">{desc}</div>
         </div>
       </div>
       {loading ? (
-        <span className="text-xs text-ink/40">…</span>
+        <span className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-ink/15 border-t-ink/40" />
       ) : connected ? (
-        <span className="flex items-center gap-1.5 text-sm font-semibold text-emerald-600">
-          <CheckIcon className="h-4 w-4" />
+        <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-700">
+          <CheckIcon className="h-3.5 w-3.5" />
           Connected
         </span>
       ) : (
-        <Button variant="dark" onClick={onConnect} disabled={busy}>
+        <Button variant="dark" onClick={onConnect} disabled={busy} className="shrink-0">
           {busy ? "Opening…" : "Connect"}
         </Button>
       )}
-    </Card>
+    </div>
   );
 }

@@ -103,7 +103,7 @@ export default function MailStep() {
       error={error}
       busy={busy}
       onContinue={onContinue}
-      onSkip={onSkip}
+      onSecondary={onSkip}
     >
       <RadioGroup options={OPTIONS} value={choice} onChange={(v) => setChoice(v as Choice)} />
     </StepShell>

@@ -2,7 +2,6 @@
 
 import type { ReactNode } from "react";
 import Button from "@/components/ui/Button";
-import Card from "@/components/ui/Card";
 
 type StepShellProps = {
   title: string;
@@ -10,49 +9,68 @@ type StepShellProps = {
   error: string | null;
   busy: boolean;
   continueLabel?: string;
+  continueDisabled?: boolean;
   onContinue: () => void;
-  onSkip: () => void;
+  /** Defaults to the skip escape hatch. Steps 2-4 can all be skipped safely —
+   *  every feature is off by default in the backend, so skipping leaves nothing
+   *  half-configured. Connect overrides it, since nothing works without grants. */
+  secondaryLabel?: string;
+  onSecondary: () => void;
+  footnote?: string;
   children: ReactNode;
 };
 
-/** Shared chrome for onboarding steps 2-4: heading on the left, the one question
- *  on the right, Continue + Skip underneath. Skip is safe on every step — all
- *  three features are off by default in the backend, so skipping leaves nothing
- *  half-configured. */
+/** Shared chrome for every onboarding step: the question centred at the top of
+ *  the card, the one thing to answer beneath it, then Continue and the
+ *  secondary action. The card itself comes from the onboarding layout. */
 export default function StepShell({
   title,
   blurb,
   error,
   busy,
   continueLabel = "Continue",
+  continueDisabled = false,
   onContinue,
-  onSkip,
+  secondaryLabel = "Skip for now",
+  onSecondary,
+  footnote = "You can change this anytime from your dashboard.",
   children,
 }: StepShellProps) {
   return (
-    <div className="grid gap-6 md:grid-cols-2">
-      <div className="pt-4">
-        <h1 className="text-2xl font-extrabold tracking-tight">{title}</h1>
-        <p className="mt-4 text-sm text-ink/60">{blurb}</p>
-        <p className="mt-10 text-xs text-ink/40">You can change this anytime from your dashboard.</p>
+    <div>
+      <div className="text-center">
+        <h1 className="text-[26px] font-extrabold leading-tight tracking-tight text-ink sm:text-3xl">
+          {title}
+        </h1>
+        <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-ink/55">{blurb}</p>
       </div>
-      <div>
-        {children}
-        {error ? (
-          <Card className="mt-4 border border-accent/30 p-4 text-sm text-accent-dark">{error}</Card>
-        ) : null}
-        <Button variant="dark" onClick={onContinue} disabled={busy} className="mt-4 w-full">
-          {busy ? "Saving…" : continueLabel}
-        </Button>
-        <button
-          type="button"
-          onClick={onSkip}
-          disabled={busy}
-          className="mt-3 w-full text-sm font-medium text-ink/50 hover:text-ink disabled:opacity-50"
-        >
-          Skip for now
-        </button>
-      </div>
+
+      <div className="mt-7">{children}</div>
+
+      {error ? (
+        <div className="mt-4 rounded-2xl border border-accent/25 bg-accent/[0.06] px-4 py-3 text-sm text-accent-dark">
+          {error}
+        </div>
+      ) : null}
+
+      <Button
+        variant="dark"
+        onClick={onContinue}
+        disabled={busy || continueDisabled}
+        className="mt-6 h-12 w-full shadow-[0_14px_30px_-16px_rgba(26,29,38,0.9)]"
+      >
+        {busy ? "Saving…" : continueLabel}
+      </Button>
+      <button
+        type="button"
+        onClick={onSecondary}
+        disabled={busy}
+        className="mt-2 h-10 w-full rounded-full text-sm font-semibold text-ink/45 transition-colors hover:bg-ink/[0.04] hover:text-ink disabled:opacity-50"
+      >
+        {secondaryLabel}
+      </button>
+
+      <p className="mt-5 text-center text-xs text-ink/35">{footnote}</p>
     </div>
   );
 }
