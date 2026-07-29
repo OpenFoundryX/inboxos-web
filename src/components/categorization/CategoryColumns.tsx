@@ -29,15 +29,21 @@ function Row({
   disabled?: boolean;
   animation?: string;
 }) {
-  const { display_name, description, color_bg, actions } = category;
+  const { display_name, description, color_bg, color_text, actions } = category;
   return (
     <div
       className={`flex items-center justify-between gap-3 px-4 py-3.5 ${animation ?? ""}`}
     >
       <div className="flex min-w-0 items-start gap-3">
+        {/* The label colours are pastels so they sit quietly in Gmail, which
+            leaves them near-invisible on white here — the ring in the paired
+            text colour gives the dot its edge back. */}
         <span
           className="mt-1.5 h-2 w-2 shrink-0 rounded-full"
-          style={{ backgroundColor: color_bg }}
+          style={{
+            backgroundColor: color_bg,
+            boxShadow: `inset 0 0 0 1px ${color_text}`,
+          }}
         />
         <div className="min-w-0">
           <div className="flex items-center gap-2">

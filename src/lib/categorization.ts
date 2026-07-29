@@ -109,6 +109,27 @@ export const MATCH_TYPES = Object.keys(MATCH_TYPE_LABELS) as MatchType[];
 
 export const CLASSIFIER_MODELS = ["gpt-4o-mini", "gpt-4o"];
 
+/** Gmail rejects any label colour outside its own fixed palette, so these are
+ *  drawn from it: the pastel row for the background, paired with the matching
+ *  darkest row for the text. Light enough that a labelled row reads as mail
+ *  first and a tag second, and dark-on-light survives Outlook rendering the
+ *  same label as a category chip. */
+export const LABEL_COLORS = [
+  { bg: "#f6c5be", text: "#822111" }, // red
+  { bg: "#ffe6c7", text: "#a46a21" }, // orange
+  { bg: "#fef1d1", text: "#aa8831" }, // yellow
+  { bg: "#b9e4d0", text: "#076239" }, // green
+  { bg: "#c9daf8", text: "#1c4587" }, // blue
+  { bg: "#e4d7f5", text: "#41236d" }, // purple
+  { bg: "#fcdee8", text: "#83334c" }, // pink
+  { bg: "#efefef", text: "#434343" }, // grey
+] as const;
+
+/** Falls back to the grey pairing for a background we did not ship. */
+export function textForLabelBg(bg: string): string {
+  return LABEL_COLORS.find((c) => c.bg === bg)?.text ?? "#434343";
+}
+
 /** Shown before the backend answers, and in mock mode when no API is configured.
  *  Mirrors BUILTIN_CATEGORIES on the server. */
 export const DEFAULT_CATEGORIES: Category[] = [
@@ -118,8 +139,8 @@ export const DEFAULT_CATEGORIES: Category[] = [
     display_name: "To do",
     description:
       "Needs an action or reply from me; a real request, task, or question directed at me.",
-    color_bg: "#fb4c2f",
-    color_text: "#ffffff",
+    color_bg: "#f6c5be",
+    color_text: "#822111",
     is_builtin: true,
     is_enabled: true,
     sort_order: 0,
@@ -131,8 +152,8 @@ export const DEFAULT_CATEGORIES: Category[] = [
     display_name: "To follow up",
     description:
       "A thread I'm waiting on or should chase; awaiting someone's reply, or a nudge I must track.",
-    color_bg: "#a479e2",
-    color_text: "#ffffff",
+    color_bg: "#e4d7f5",
+    color_text: "#41236d",
     is_builtin: true,
     is_enabled: true,
     sort_order: 1,
@@ -144,8 +165,8 @@ export const DEFAULT_CATEGORIES: Category[] = [
     display_name: "Notification",
     description:
       "Automated transactional notice: receipts, confirmations, alerts, security codes, system messages.",
-    color_bg: "#4a86e8",
-    color_text: "#ffffff",
+    color_bg: "#c9daf8",
+    color_text: "#1c4587",
     is_builtin: true,
     is_enabled: true,
     sort_order: 2,
@@ -157,8 +178,8 @@ export const DEFAULT_CATEGORIES: Category[] = [
     display_name: "FYI",
     description:
       "Informational and relevant, from a person or team, but needs no action from me.",
-    color_bg: "#16a766",
-    color_text: "#ffffff",
+    color_bg: "#b9e4d0",
+    color_text: "#076239",
     is_builtin: true,
     is_enabled: true,
     sort_order: 3,
@@ -170,8 +191,8 @@ export const DEFAULT_CATEGORIES: Category[] = [
     display_name: "Marketing",
     description:
       "Promotional or sales: newsletters, product offers, campaigns, cold pitches.",
-    color_bg: "#fad165",
-    color_text: "#000000",
+    color_bg: "#fef1d1",
+    color_text: "#aa8831",
     is_builtin: true,
     is_enabled: true,
     sort_order: 4,
@@ -183,8 +204,8 @@ export const DEFAULT_CATEGORIES: Category[] = [
     display_name: "Noise",
     description:
       "Low-value bulk or social clutter; spam-like, unimportant, safe to ignore.",
-    color_bg: "#999999",
-    color_text: "#ffffff",
+    color_bg: "#efefef",
+    color_text: "#434343",
     is_builtin: true,
     is_enabled: true,
     sort_order: 5,

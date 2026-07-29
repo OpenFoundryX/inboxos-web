@@ -4,24 +4,14 @@ import { useState } from "react";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import { PlusIcon, TrashIcon } from "@/components/app/icons";
-import type { Category, CategoryCreate } from "@/lib/categorization";
+import {
+  LABEL_COLORS,
+  textForLabelBg,
+  type Category,
+  type CategoryCreate,
+} from "@/lib/categorization";
 
-const PRESET_COLORS = [
-  "#fb4c2f",
-  "#ffad47",
-  "#fad165",
-  "#16a766",
-  "#4a86e8",
-  "#a479e2",
-  "#f691b3",
-  "#999999",
-];
-
-/** White text on the dark presets, black on the two light ones — mirrors the
- *  pairings the backend ships for the built-in categories. */
-function textFor(bg: string): string {
-  return bg === "#fad165" || bg === "#ffad47" ? "#000000" : "#ffffff";
-}
+const PRESET_COLORS = LABEL_COLORS.map((c) => c.bg);
 
 export default function CustomCategoryCard({
   categories,
@@ -55,7 +45,7 @@ export default function CustomCategoryCard({
       display_name: name.trim(),
       description: description.trim(),
       color_bg: color,
-      color_text: textFor(color),
+      color_text: textForLabelBg(color),
     });
     reset();
   }
@@ -78,7 +68,10 @@ export default function CustomCategoryCard({
               <div className="flex min-w-0 items-start gap-3">
                 <span
                   className="mt-1.5 h-2 w-2 shrink-0 rounded-full"
-                  style={{ backgroundColor: c.color_bg }}
+                  style={{
+                    backgroundColor: c.color_bg,
+                    boxShadow: `inset 0 0 0 1px ${c.color_text}`,
+                  }}
                 />
                 <div className="min-w-0">
                   <div className="text-sm font-medium text-ink">{c.display_name}</div>
@@ -126,7 +119,10 @@ export default function CustomCategoryCard({
                 className={`h-5 w-5 rounded-full transition-transform ${
                   color === c ? "scale-110 ring-2 ring-ink/30 ring-offset-1" : ""
                 }`}
-                style={{ backgroundColor: c }}
+                style={{
+                  backgroundColor: c,
+                  boxShadow: `inset 0 0 0 1px ${textForLabelBg(c)}`,
+                }}
               />
             ))}
           </div>
