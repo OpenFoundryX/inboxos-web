@@ -27,20 +27,6 @@ function greeting(): string {
   return "Evening";
 }
 
-function TopbarActions({ onRefresh }: { onRefresh: () => void }) {
-  return (
-    <>
-      <button className="flex items-center gap-1 rounded-full border border-ink/10 bg-canvas px-3 py-1.5 text-sm font-medium text-ink/70">
-        Personal
-        <ChevronDownIcon className="h-4 w-4" />
-      </button>
-      <button onClick={onRefresh} className="text-ink/40 hover:text-ink" aria-label="Refresh">
-        <RefreshIcon className="h-5 w-5" />
-      </button>
-    </>
-  );
-}
-
 function Skeleton() {
   return (
     <div className="space-y-10">
@@ -130,7 +116,6 @@ export default function DashboardHome() {
   return (
     <>
       <Topbar title="Dashboard">
-        <TopbarActions onRefresh={load} />
       </Topbar>
 
       <div className="p-8">
