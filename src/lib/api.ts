@@ -55,10 +55,16 @@ function refreshSession(): Promise<boolean> {
 }
 
 function send(path: string, init?: RequestInit): Promise<Response> {
+  // A FormData body must NOT carry an explicit Content-Type: the browser has to
+  // set it itself so it can append the multipart boundary, and overriding it
+  // leaves the server unable to parse a single field.
+  const isFormData =
+    typeof FormData !== "undefined" && init?.body instanceof FormData;
+
   return fetch(`/api${path}`, {
     ...init,
     headers: {
-      "Content-Type": "application/json",
+      ...(isFormData ? {} : { "Content-Type": "application/json" }),
       ...(init?.headers ?? {}),
     },
   });
@@ -73,7 +79,8 @@ export async function apiFetch<T>(
   // Access cookies last 30 minutes, refresh cookies 30 days. Both are httpOnly,
   // so expiry is invisible from here — a 401 is the only signal we get, and the
   // recovery is one refresh then one replay. Replaying is safe because every
-  // body in this app is an already-serialized string, not a stream.
+  // body in this app is either an already-serialized string or a FormData
+  // object; neither is consumed by the first attempt the way a stream would be.
   if (res.status === 401 && path !== REFRESH_PATH) {
     if (await refreshSession()) {
       res = await send(path, init);
