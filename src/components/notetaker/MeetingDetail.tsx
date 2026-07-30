@@ -2,6 +2,7 @@
 
 import Card from "@/components/ui/Card";
 import StatusPill from "@/components/notetaker/StatusPill";
+import RecordingPlayer from "@/components/notetaker/RecordingPlayer";
 import { ExternalLinkIcon } from "@/components/app/icons";
 import { formatMeetingWhen, type MeetingDetail as Meeting } from "@/lib/meetings";
 
@@ -14,7 +15,14 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-export default function MeetingDetail({ meeting }: { meeting: Meeting }) {
+export default function MeetingDetail({
+  meeting,
+  onRefreshRecording,
+}: {
+  meeting: Meeting;
+  /** Re-resolve the recording link when the signed one expires mid-playback. */
+  onRefreshRecording?: () => Promise<string | null>;
+}) {
   const hasNotes =
     Boolean(meeting.summary) || meeting.decisions.length > 0 || meeting.action_items.length > 0;
 
@@ -53,6 +61,23 @@ export default function MeetingDetail({ meeting }: { meeting: Meeting }) {
           <span className="font-semibold text-ink">Why: </span>
           {meeting.status_detail}
         </Card>
+      ) : null}
+
+      {/* Above the notes: someone who opens a meeting they missed wants to
+          watch it, and shouldn't have to scroll past a summary to find it. */}
+      {meeting.recording_url ? (
+        <Section title="Recording">
+          <RecordingPlayer src={meeting.recording_url} onExpired={onRefreshRecording} />
+        </Section>
+      ) : meeting.has_recording ? (
+        // A recording exists but the provider wouldn't hand over a link just
+        // now. Saying so beats showing nothing, which would imply there is no
+        // video at all.
+        <Section title="Recording">
+          <p className="text-sm text-ink/50">
+            The recording couldn&apos;t be loaded just now. Reload the page to try again.
+          </p>
+        </Section>
       ) : null}
 
       {!hasNotes ? (

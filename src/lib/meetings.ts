@@ -22,10 +22,22 @@ export type MeetingRead = {
   decisions: string[];
   action_items: ActionItem[];
   recap_sent_at: string | null;
+  /** A video exists. Cheap for the server to answer, so every row carries it —
+   *  unlike the link itself, which costs a provider call. */
+  has_recording: boolean;
 };
 
-/** The list endpoint omits the transcript — it's too large to return per row. */
-export type MeetingDetail = MeetingRead & { transcript: string | null };
+/** The list endpoint omits the transcript and the video link — one is too large
+ *  to return per row, the other too expensive. */
+export type MeetingDetail = MeetingRead & {
+  transcript: string | null;
+  /** A presigned provider link, resolved fresh each time the detail endpoint is
+   *  called. Good for this page load only: it expires within hours, so it must
+   *  never be cached, bookmarked, or pasted anywhere that outlives the tab.
+   *  Re-fetch the meeting to get a working one. */
+  recording_url: string | null;
+  recording_url_expires_at: string | null;
+};
 
 export type NotetakerSettings = {
   enabled: boolean;

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import StatusPill from "@/components/notetaker/StatusPill";
-import { ChevronRightIcon } from "@/components/app/icons";
+import { ChevronRightIcon, PlayIcon } from "@/components/app/icons";
 import { formatMeetingWhen, isCancellable, type MeetingRead } from "@/lib/meetings";
 
 export default function MeetingListRow({
@@ -32,6 +32,13 @@ export default function MeetingListRow({
       </Link>
 
       <div className="flex shrink-0 items-center gap-3">
+        {/* A marker, not a link: the playable URL costs a provider call, so it
+            is resolved once on the detail page rather than for every row. */}
+        {meeting.has_recording ? (
+          <span className="text-ink/30" title="Recording available">
+            <PlayIcon className="h-4 w-4" />
+          </span>
+        ) : null}
         {isCancellable(meeting) ? (
           <button
             type="button"

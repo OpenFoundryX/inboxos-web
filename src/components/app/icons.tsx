@@ -84,6 +84,15 @@ export function EnvelopeIcon(p: IconProps) {
   );
 }
 
+export function PlayIcon(p: IconProps) {
+  return (
+    <Base {...p}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M10 8.5v7l6-3.5z" />
+    </Base>
+  );
+}
+
 export function ExternalLinkIcon(p: IconProps) {
   return (
     <Base {...p}>

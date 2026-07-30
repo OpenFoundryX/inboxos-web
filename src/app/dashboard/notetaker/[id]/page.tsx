@@ -52,6 +52,16 @@ export default function MeetingDetailPage() {
     load();
   }, [load]);
 
+  /** The recording link is signed for a few hours, so a tab left open long
+   *  enough will hold a dead one. Re-fetching the meeting is all it takes —
+   *  the server resolves a fresh link on every detail read. */
+  const refreshRecording = useCallback(async () => {
+    if (!id) return null;
+    const fresh = await getMeeting(id);
+    setMeeting(fresh);
+    return fresh.recording_url;
+  }, [id]);
+
   return (
     <>
       <Topbar title="Notetaker" />
@@ -76,7 +86,7 @@ export default function MeetingDetailPage() {
               <div className="h-48 animate-pulse rounded-2xl bg-ink/5" />
             </div>
           ) : (
-            <MeetingDetail meeting={meeting} />
+            <MeetingDetail meeting={meeting} onRefreshRecording={refreshRecording} />
           )}
         </div>
       </div>
