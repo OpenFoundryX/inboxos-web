@@ -231,3 +231,90 @@ export function UsersIcon(p: IconProps) {
     </Base>
   );
 }
+
+export function ArrowLeftIcon(p: IconProps) {
+  return (
+    <Base {...p}>
+      <path d="M19 12H5M12 19l-7-7 7-7" />
+    </Base>
+  );
+}
+
+export function ArrowRightIcon(p: IconProps) {
+  return (
+    <Base {...p}>
+      <path d="M5 12h14M12 5l7 7-7 7" />
+    </Base>
+  );
+}
+
+export function ChevronUpIcon(p: IconProps) {
+  return (
+    <Base {...p}>
+      <path d="m18 15-6-6-6 6" />
+    </Base>
+  );
+}
+
+export function DownloadIcon(p: IconProps) {
+  return (
+    <Base {...p}>
+      <path d="M12 3v12M7 11l5 5 5-5" />
+      <path d="M4 20h16" />
+    </Base>
+  );
+}
+
+export function UploadIcon(p: IconProps) {
+  return (
+    <Base {...p}>
+      <path d="M12 17V5M7 9l5-5 5 5" />
+      <path d="M4 20h16" />
+    </Base>
+  );
+}
+
+export function ShareIcon(p: IconProps) {
+  return (
+    <Base {...p}>
+      <path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" />
+      <path d="M12 15V3M8 7l4-4 4 4" />
+    </Base>
+  );
+}
+
+export function EllipsisIcon(p: IconProps) {
+  return (
+    <Base {...p}>
+      <circle cx="5" cy="12" r="1" fill="currentColor" />
+      <circle cx="12" cy="12" r="1" fill="currentColor" />
+      <circle cx="19" cy="12" r="1" fill="currentColor" />
+    </Base>
+  );
+}
+
+export function SparkleIcon(p: IconProps) {
+  return (
+    <Base {...p}>
+      <path d="M12 3.5 13.7 9l5.5 1.7-5.5 1.7L12 18l-1.7-5.6L4.8 10.7 10.3 9z" />
+    </Base>
+  );
+}
+
+export function WandIcon(p: IconProps) {
+  return (
+    <Base {...p}>
+      <path d="m4 20 10-10" />
+      <path d="M16.5 3.5 18 6l2.5 1.5L18 9l-1.5 2.5L15 9l-2.5-1.5L15 6z" />
+    </Base>
+  );
+}
+
+export function VideoIcon(p: IconProps) {
+  return (
+    <Base {...p}>
+      <rect x="2" y="6" width="13" height="12" rx="2" />
+      <path d="m15 11 6-4v10l-6-4z" />
+    </Base>
+  );
+}

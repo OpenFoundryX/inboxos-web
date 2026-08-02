@@ -2,8 +2,14 @@
 
 import Link from "next/link";
 import StatusPill from "@/components/notetaker/StatusPill";
-import { ChevronRightIcon, PlayIcon } from "@/components/app/icons";
-import { formatMeetingWhen, isCancellable, type MeetingRead } from "@/lib/meetings";
+import { UsersIcon, VideoIcon } from "@/components/app/icons";
+import {
+  formatTimeRange,
+  isCancellable,
+  isInFlight,
+  meetingTitle,
+  type MeetingRead,
+} from "@/lib/meetings";
 
 export default function MeetingListRow({
   meeting,
@@ -14,31 +20,48 @@ export default function MeetingListRow({
   busy: boolean;
   onCancel: (meeting: MeetingRead) => void;
 }) {
-  return (
-    <div className="flex items-center gap-3 border-t border-black/5 px-5 py-4 first:border-t-0">
-      {/* The link wraps only the text so the Cancel button stays clickable —
-          nesting a button inside an anchor would swallow its click. */}
-      <Link
-        href={`/dashboard/notetaker/${meeting.id}`}
-        className="group min-w-0 flex-1"
-        aria-label={`Open ${meeting.title ?? "untitled meeting"}`}
-      >
-        <div className="truncate text-sm font-semibold text-ink group-hover:underline">
-          {meeting.title ?? "Untitled meeting"}
-        </div>
-        <div className="mt-0.5 text-xs text-ink/50">
-          {formatMeetingWhen(meeting.starts_at, meeting.ends_at)}
-        </div>
-      </Link>
+  // Once a meeting is simply done, its status pill says nothing the row
+  // doesn't. It's kept for the states that are still going somewhere.
+  const showStatus = isInFlight(meeting) || meeting.status === "failed";
 
-      <div className="flex shrink-0 items-center gap-3">
+  return (
+    <div className="group relative flex items-center gap-3 rounded-xl border border-black/5 bg-card px-4 py-3 transition-colors hover:border-black/10">
+      {/* The link is stretched over the whole row rather than wrapped around
+          it, so the Cancel button beside it stays clickable — a button nested
+          in an anchor would have its click swallowed. */}
+      <div className="min-w-0 flex-1">
+        <Link
+          href={`/dashboard/notetaker/${meeting.id}`}
+          className="text-sm font-semibold text-ink after:absolute after:inset-0 group-hover:underline"
+        >
+          {meetingTitle(meeting)}
+        </Link>
+        <div className="mt-0.5 text-xs text-ink/50">
+          {formatTimeRange(meeting.starts_at, meeting.ends_at)}
+        </div>
+      </div>
+
+      <div className="relative flex shrink-0 items-center gap-3 text-ink/35">
+        {meeting.attendees.length > 0 ? (
+          <span
+            className="flex items-center gap-1 text-xs"
+            title={`${meeting.attendees.length} participants`}
+          >
+            <UsersIcon className="h-3.5 w-3.5" />
+            {meeting.attendees.length}
+          </span>
+        ) : null}
+
         {/* A marker, not a link: the playable URL costs a provider call, so it
             is resolved once on the detail page rather than for every row. */}
         {meeting.has_recording ? (
-          <span className="text-ink/30" title="Recording available">
-            <PlayIcon className="h-4 w-4" />
+          <span title="Recording available">
+            <VideoIcon className="h-4 w-4" />
           </span>
         ) : null}
+
+        {showStatus ? <StatusPill status={meeting.status} /> : null}
+
         {isCancellable(meeting) ? (
           <button
             type="button"
@@ -49,15 +72,6 @@ export default function MeetingListRow({
             {busy ? "Cancelling…" : "Cancel bot"}
           </button>
         ) : null}
-        <StatusPill status={meeting.status} />
-        <Link
-          href={`/dashboard/notetaker/${meeting.id}`}
-          tabIndex={-1}
-          aria-hidden="true"
-          className="text-ink/25 transition-colors hover:text-ink"
-        >
-          <ChevronRightIcon className="h-4 w-4" />
-        </Link>
       </div>
     </div>
   );

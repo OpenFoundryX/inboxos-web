@@ -1,19 +1,22 @@
 "use client";
 
+import { useState } from "react";
 import Card from "@/components/ui/Card";
+import Tabs from "@/components/ui/Tabs";
 import StatusPill from "@/components/notetaker/StatusPill";
-import RecordingPlayer from "@/components/notetaker/RecordingPlayer";
-import { ExternalLinkIcon } from "@/components/app/icons";
-import { formatMeetingWhen, type MeetingDetail as Meeting } from "@/lib/meetings";
+import MeetingVideo from "@/components/notetaker/MeetingVideo";
+import ParticipantsMenu from "@/components/notetaker/ParticipantsMenu";
+import SummaryPanel from "@/components/notetaker/SummaryPanel";
+import TranscriptPanel from "@/components/notetaker/TranscriptPanel";
+import {
+  formatMeetingDate,
+  formatTimeRange,
+  isInFlight,
+  type MeetingDetail as Meeting,
+} from "@/lib/meetings";
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <Card className="p-5">
-      <div className="mb-3 text-sm font-bold text-ink">{title}</div>
-      {children}
-    </Card>
-  );
-}
+const SUMMARY_TAB = "Summary";
+const TRANSCRIPT_TAB = "Transcript";
 
 export default function MeetingDetail({
   meeting,
@@ -23,36 +26,37 @@ export default function MeetingDetail({
   /** Re-resolve the recording link when the signed one expires mid-playback. */
   onRefreshRecording?: () => Promise<string | null>;
 }) {
-  const hasNotes =
-    Boolean(meeting.summary) || meeting.decisions.length > 0 || meeting.action_items.length > 0;
+  const [tab, setTab] = useState(SUMMARY_TAB);
 
-  return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="min-w-0">
-          <h2 className="text-2xl font-bold tracking-tight text-ink">
-            {meeting.title ?? "Untitled meeting"}
-          </h2>
-          <p className="mt-1 text-sm text-ink/60">
-            {formatMeetingWhen(meeting.starts_at, meeting.ends_at)}
-            {meeting.attendees.length > 0 ? ` · ${meeting.attendees.length} attendees` : ""}
-          </p>
-        </div>
-        <div className="flex shrink-0 items-center gap-3">
-          <StatusPill status={meeting.status} />
-          {meeting.meeting_url ? (
-            <a
-              href={meeting.meeting_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-sm font-semibold text-ink/50 transition-colors hover:text-ink"
-            >
-              Meeting link
-              <ExternalLinkIcon className="h-4 w-4" />
-            </a>
-          ) : null}
+  const meta = (
+    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+      <div className="min-w-0">
+        <div className="text-sm text-ink/60">{formatMeetingDate(meeting.starts_at)}</div>
+        <div className="text-sm text-ink/60">
+          {formatTimeRange(meeting.starts_at, meeting.ends_at)}
         </div>
       </div>
+      <div className="flex shrink-0 items-center gap-2">
+        {/* The pill is noise on a meeting that's simply finished — its notes
+            being on screen already say so. It earns its place while something
+            is still moving, or when it went wrong. */}
+        {isInFlight(meeting) || meeting.status === "failed" ? (
+          <StatusPill status={meeting.status} />
+        ) : null}
+        <ParticipantsMenu attendees={meeting.attendees} />
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="space-y-4">
+      <MeetingVideo
+        src={meeting.recording_url}
+        hasRecording={meeting.has_recording}
+        loading={false}
+        onExpired={onRefreshRecording}
+        meta={meta}
+      />
 
       {/* status_detail is the only thing that explains a failure — the backend
           stores the provider's reason there and nowhere else. */}
@@ -63,77 +67,13 @@ export default function MeetingDetail({
         </Card>
       ) : null}
 
-      {/* Above the notes: someone who opens a meeting they missed wants to
-          watch it, and shouldn't have to scroll past a summary to find it. */}
-      {meeting.recording_url ? (
-        <Section title="Recording">
-          <RecordingPlayer src={meeting.recording_url} onExpired={onRefreshRecording} />
-        </Section>
-      ) : meeting.has_recording ? (
-        // A recording exists but the provider wouldn't hand over a link just
-        // now. Saying so beats showing nothing, which would imply there is no
-        // video at all.
-        <Section title="Recording">
-          <p className="text-sm text-ink/50">
-            The recording couldn&apos;t be loaded just now. Reload the page to try again.
-          </p>
-        </Section>
-      ) : null}
+      <Tabs fill tabs={[SUMMARY_TAB, TRANSCRIPT_TAB]} active={tab} onChange={setTab} />
 
-      {!hasNotes ? (
-        <Card className="p-10 text-center text-sm text-ink/50">
-          No notes yet — they appear once the recording finishes processing.
-        </Card>
-      ) : null}
-
-      {meeting.summary ? (
-        <Section title="Summary">
-          <p className="whitespace-pre-wrap text-sm leading-relaxed text-ink/80">
-            {meeting.summary}
-          </p>
-        </Section>
-      ) : null}
-
-      {meeting.decisions.length > 0 ? (
-        <Section title="Decisions">
-          <ul className="space-y-2">
-            {meeting.decisions.map((d, i) => (
-              <li key={i} className="flex gap-2 text-sm text-ink/80">
-                <span aria-hidden="true" className="text-ink/30">
-                  •
-                </span>
-                {d}
-              </li>
-            ))}
-          </ul>
-        </Section>
-      ) : null}
-
-      {meeting.action_items.length > 0 ? (
-        <Section title="Action items">
-          <ul className="divide-y divide-black/5">
-            {meeting.action_items.map((a, i) => (
-              <li key={i} className="flex items-start justify-between gap-4 py-3 first:pt-0">
-                <span className="text-sm text-ink/80">{a.what}</span>
-                <span className="shrink-0 text-xs text-ink/50">
-                  {[a.owner, a.due_at].filter(Boolean).join(" · ") || "—"}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </Section>
-      ) : null}
-
-      {meeting.transcript ? (
-        <Card className="p-5">
-          <details>
-            <summary className="cursor-pointer text-sm font-bold text-ink">Transcript</summary>
-            <pre className="mt-4 max-h-[32rem] overflow-auto whitespace-pre-wrap font-sans text-sm leading-relaxed text-ink/70">
-              {meeting.transcript}
-            </pre>
-          </details>
-        </Card>
-      ) : null}
+      {tab === SUMMARY_TAB ? (
+        <SummaryPanel meeting={meeting} />
+      ) : (
+        <TranscriptPanel transcript={meeting.transcript} />
+      )}
     </div>
   );
 }

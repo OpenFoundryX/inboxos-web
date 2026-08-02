@@ -122,31 +122,156 @@ export const CANCELLABLE = new Set(["pending", "scheduled", "joining", "recordin
 export const isInFlight = (m: MeetingRead) => IN_FLIGHT.has(m.status);
 export const isCancellable = (m: MeetingRead) => CANCELLABLE.has(m.status);
 
+/** Meetings the bot hasn't sat in on yet. Everything else — live, processing,
+ *  written up, failed — belongs under "Recorded", because the user's question
+ *  there is "what happened?" rather than "what's coming?". */
+const UPCOMING = new Set(["pending", "scheduled"]);
+export const isUpcoming = (m: MeetingRead) => UPCOMING.has(m.status);
+
 /* ------------------------------------------------------------------ format */
 
-/** "Mon 14 Jul, 14:00 - 14:30" in the browser's timezone. Unlike the dashboard
- *  agenda — which must echo the timezone the server bucketed Today/Tomorrow by —
- *  this list isn't split into server-defined days, so local time is right. */
-export function formatMeetingWhen(startsAt: string | null, endsAt: string | null): string {
-  if (!startsAt) return "Time unknown";
-  const start = new Date(startsAt);
-  if (Number.isNaN(start.getTime())) return "Time unknown";
+const parse = (iso: string | null): Date | null => {
+  if (!iso) return null;
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? null : d;
+};
 
-  const day = new Intl.DateTimeFormat("en-GB", {
-    weekday: "short",
+/** Times are formatted in the browser's timezone. Unlike the dashboard agenda —
+ *  which must echo the timezone the server bucketed Today/Tomorrow by — these
+ *  lists aren't split into server-defined days, so local time is right. */
+const TIME = new Intl.DateTimeFormat("en-GB", {
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+});
+
+/** "21:15 - 21:17", or just the start when there's no end. */
+export function formatTimeRange(startsAt: string | null, endsAt: string | null): string {
+  const start = parse(startsAt);
+  if (!start) return "Time unknown";
+  const end = parse(endsAt);
+  return end ? `${TIME.format(start)} - ${TIME.format(end)}` : TIME.format(start);
+}
+
+/** "31 Jul 2026" — the date line under a meeting's video. */
+export function formatMeetingDate(startsAt: string | null): string {
+  const start = parse(startsAt);
+  if (!start) return "Date unknown";
+  return new Intl.DateTimeFormat("en-GB", {
     day: "numeric",
     month: "short",
+    year: "numeric",
   }).format(start);
-  const time = new Intl.DateTimeFormat("en-GB", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
+}
+
+/** "Friday, 31 July" — the sticky heading a day's meetings sit under. Today and
+ *  yesterday are named instead, since that's how people refer to them. */
+export function formatMeetingDay(startsAt: string | null): string {
+  const start = parse(startsAt);
+  if (!start) return "Date unknown";
+
+  const midnight = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const days = Math.round((midnight(start) - midnight(new Date())) / 86_400_000);
+  if (days === 0) return "Today";
+  if (days === -1) return "Yesterday";
+  if (days === 1) return "Tomorrow";
+
+  return new Intl.DateTimeFormat("en-GB", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    // A year only earns its space once it's ambiguous.
+    ...(start.getFullYear() === new Date().getFullYear() ? {} : { year: "numeric" }),
+  }).format(start);
+}
+
+/** Calendar titles are optional, and a bare "Untitled meeting" is useless in a
+ *  list where every other row says the same. Falling back to the date at least
+ *  distinguishes one row from the next. */
+export function meetingTitle(m: Pick<MeetingRead, "title" | "starts_at">): string {
+  const title = m.title?.trim();
+  if (title) return title;
+  const start = parse(m.starts_at);
+  if (!start) return "Untitled meeting";
+  return `Meeting on ${new Intl.DateTimeFormat("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(start)}`;
+}
+
+export type MeetingDayGroup = { key: string; label: string; meetings: MeetingRead[] };
+
+/**
+ * Bucket meetings under day headings.
+ *
+ * `direction` decides both orderings at once: recorded meetings read
+ * newest-first (the one that just ended is the one you came for), upcoming
+ * ones soonest-first. Meetings with no start time sort last either way — they
+ * can't be placed on the timeline, but dropping them would hide real rows.
+ */
+export function groupMeetingsByDay(
+  meetings: MeetingRead[],
+  direction: "newest" | "soonest",
+): MeetingDayGroup[] {
+  const groups = new Map<string, MeetingDayGroup>();
+
+  for (const m of meetings) {
+    const start = parse(m.starts_at);
+    const key = start ? start.toDateString() : "unknown";
+    let group = groups.get(key);
+    if (!group) {
+      group = { key, label: formatMeetingDay(m.starts_at), meetings: [] };
+      groups.set(key, group);
+    }
+    group.meetings.push(m);
+  }
+
+  const sign = direction === "newest" ? -1 : 1;
+  const at = (m: MeetingRead) => parse(m.starts_at)?.getTime() ?? null;
+
+  const ordered = [...groups.values()].sort((a, b) => {
+    const ta = at(a.meetings[0]);
+    const tb = at(b.meetings[0]);
+    if (ta === null) return 1;
+    if (tb === null) return -1;
+    return sign * (ta - tb);
   });
 
-  const end = endsAt ? new Date(endsAt) : null;
-  const range =
-    end && !Number.isNaN(end.getTime())
-      ? `${time.format(start)} - ${time.format(end)}`
-      : time.format(start);
-  return `${day}, ${range}`;
+  for (const group of ordered) {
+    group.meetings.sort((a, b) => {
+      const ta = at(a);
+      const tb = at(b);
+      if (ta === null) return 1;
+      if (tb === null) return -1;
+      return sign * (ta - tb);
+    });
+  }
+
+  return ordered;
+}
+
+/** Case-insensitive match across the fields a person would search by. */
+export function matchesQuery(m: MeetingRead, query: string): boolean {
+  const q = query.trim().toLowerCase();
+  if (!q) return true;
+  return (
+    meetingTitle(m).toLowerCase().includes(q) ||
+    m.attendees.some((a) => a.toLowerCase().includes(q)) ||
+    (m.summary?.toLowerCase().includes(q) ?? false)
+  );
+}
+
+/** The bit of an attendee string a human reads — "Ada Lovelace" from
+ *  "Ada Lovelace <ada@example.com>", or the local part of a bare address. */
+export function attendeeName(attendee: string): string {
+  const named = /^\s*"?([^"<]+?)"?\s*<[^>]+>\s*$/.exec(attendee);
+  if (named) return named[1];
+  const at = attendee.indexOf("@");
+  return at > 0 ? attendee.slice(0, at) : attendee;
+}
+
+export function initialOf(name: string): string {
+  const first = name.trim()[0];
+  return first ? first.toUpperCase() : "?";
 }

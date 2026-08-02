@@ -66,6 +66,9 @@ function inline(text: string, keyPrefix: string) {
 }
 
 const BULLET = /^\s*[-*]\s+/;
+/** ATX headings. Meeting summaries are sectioned ("Attendees", "Decisions");
+ *  without this they'd render with the hashes still attached. */
+const HEADING = /^(#{1,4})\s+(.*)$/;
 /** A line that is a link followed by optional prose — how the assistant cites
  *  an email. Matched with or without a bullet marker, because the model emits
  *  both despite the prompt asking for a list. */
@@ -131,6 +134,18 @@ export default function Markdown({ text }: { text: string }) {
 
     if (line.trim() === "") {
       flushAll();
+      continue;
+    }
+
+    const heading = HEADING.exec(line);
+    if (heading) {
+      flushAll();
+      const key = `h-${blocks.length}`;
+      blocks.push(
+        <p key={key} className="mb-1.5 mt-5 text-base font-bold text-ink first:mt-0">
+          {inline(heading[2], key)}
+        </p>,
+      );
       continue;
     }
 

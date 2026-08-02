@@ -6,6 +6,7 @@ import Card from "@/components/ui/Card";
 import Tabs from "@/components/ui/Tabs";
 import Toggle from "@/components/ui/Toggle";
 import { CopyIcon } from "@/components/app/icons";
+import { SCHEDULING_LINK } from "@/lib/scheduling";
 
 const FEATURES = [
   {
@@ -46,9 +47,7 @@ export default function SchedulingPage() {
                 <div className="text-sm font-semibold text-ink">
                   Share this link so others can book time with you
                 </div>
-                <div className="mt-0.5 truncate text-xs text-ink/40">
-                  inboxos.app/e/your-scheduling-link
-                </div>
+                <div className="mt-0.5 truncate text-xs text-ink/40">{SCHEDULING_LINK}</div>
               </div>
               <button className="flex items-center gap-2 rounded-full border border-ink/10 px-3 py-1.5 text-sm font-medium text-ink/70 hover:text-ink">
                 <CopyIcon className="h-4 w-4" />

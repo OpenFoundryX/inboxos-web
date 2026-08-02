@@ -51,6 +51,24 @@ export function disableMeetingBot(meetingId: string): Promise<void> {
   return apiFetch<void>(`/meetings/${meetingId}/bot`, { method: "DELETE" });
 }
 
+/**
+ * Hours of meetings on today's agenda.
+ *
+ * Derived rather than fetched: the summary already carries today's events, and
+ * their durations are timezone-independent, so there's nothing the server
+ * could tell us that this doesn't. Rounded to a half hour, because the figure
+ * is there to be glanced at.
+ */
+export function meetingHoursToday(meetings: DashboardMeetings): number {
+  const ms = meetings.today.reduce((total, item) => {
+    const start = new Date(item.starts_at).getTime();
+    const end = new Date(item.ends_at).getTime();
+    if (Number.isNaN(start) || Number.isNaN(end) || end <= start) return total;
+    return total + (end - start);
+  }, 0);
+  return Math.round(ms / 1_800_000) / 2;
+}
+
 /** "12:00 - 12:30", rendered in the timezone the API bucketed the day by —
  *  not the browser's. A user checking their agenda from a laptop still set to
  *  UTC must read the same times the backend used to split Today from Tomorrow. */

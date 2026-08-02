@@ -1,8 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import Topbar from "@/components/app/Topbar";
-import PageHeader from "@/components/app/PageHeader";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import Tabs from "@/components/ui/Tabs";
@@ -10,6 +8,9 @@ import Toggle from "@/components/ui/Toggle";
 import Toast, { type ToastMessage, type ToastVariant } from "@/components/ui/Toast";
 import MeetingList from "@/components/notetaker/MeetingList";
 import NotetakerRules from "@/components/notetaker/NotetakerRules";
+import InsightsPanel from "@/components/notetaker/InsightsPanel";
+import RecordMeetingMenu from "@/components/notetaker/RecordMeetingMenu";
+import { SearchIcon, SettingsIcon } from "@/components/app/icons";
 import { backendConfigured } from "@/lib/session";
 import {
   DEFAULT_SETTINGS,
@@ -17,16 +18,24 @@ import {
   getMeetings,
   getNotetakerSettings,
   isInFlight,
+  isUpcoming,
+  matchesQuery,
   updateNotetakerSettings,
   type MeetingRead,
   type NotetakerSettings,
 } from "@/lib/meetings";
 
-const MEETINGS_TAB = "Meetings";
-const SETTINGS_TAB = "Settings";
+const RECORDED_TAB = "Recorded";
+const UPCOMING_TAB = "Upcoming";
 
 /** How often to re-check meetings that are still moving. */
 const POLL_MS = 15_000;
+
+const SUGGESTIONS = [
+  "Show all my action items across meetings",
+  "Show decisions from recent meetings",
+  "Summarize meetings I haven't reviewed yet",
+];
 
 export default function NotetakerPage() {
   const configured = backendConfigured();
@@ -34,7 +43,9 @@ export default function NotetakerPage() {
   const [connected, setConnected] = useState(false);
   const [settings, setSettings] = useState<NotetakerSettings>(DEFAULT_SETTINGS);
   const [meetings, setMeetings] = useState<MeetingRead[]>([]);
-  const [tab, setTab] = useState(MEETINGS_TAB);
+  const [tab, setTab] = useState(RECORDED_TAB);
+  const [query, setQuery] = useState("");
+  const [showSettings, setShowSettings] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
@@ -177,86 +188,155 @@ export default function NotetakerPage() {
   }
 
   const controlsDisabled = configured && !connected;
-  const onSettingsTab = tab === SETTINGS_TAB;
+  const onUpcoming = tab === UPCOMING_TAB;
+
+  const visible = useMemo(
+    () =>
+      meetings.filter((m) => isUpcoming(m) === onUpcoming && matchesQuery(m, query)),
+    [meetings, onUpcoming, query],
+  );
+
+  const banner = !configured ? (
+    <>
+      Not connected to the InboxOS backend. Set{" "}
+      <code className="text-ink">NEXT_PUBLIC_API_URL</code> to manage the notetaker. Showing default
+      preferences.
+    </>
+  ) : loading ? (
+    "Loading your notetaker…"
+  ) : !connected ? (
+    "Couldn't reach the InboxOS backend. Sign in and make sure it's running."
+  ) : null;
 
   return (
-    <>
-      <Topbar title="Notetaker">
-        {onSettingsTab ? (
-          <Button variant="dark" disabled={!dirty || saving || !connected} onClick={save}>
-            {saving ? "Saving…" : "Save changes"}
-          </Button>
-        ) : null}
-      </Topbar>
+    <div className="flex h-full flex-col">
+      <header className="flex shrink-0 items-center justify-between gap-4 border-b border-black/5 bg-card px-6 py-3">
+        <h1 className="text-base font-bold text-ink">Notetaker</h1>
+        <div className="flex shrink-0 items-center gap-2">
+          <RecordMeetingMenu />
+          <button
+            type="button"
+            onClick={() => setShowSettings((s) => !s)}
+            aria-label="Notetaker settings"
+            aria-pressed={showSettings}
+            className={`rounded-lg p-2 transition-colors ${
+              showSettings ? "bg-ink/5 text-ink" : "text-ink/40 hover:bg-ink/5 hover:text-ink"
+            }`}
+          >
+            <SettingsIcon className="h-5 w-5" />
+          </button>
+        </div>
+      </header>
 
-      <div className="p-8">
-        <PageHeader
-          title="Meetings, written up"
-          subtitle="InboxOS sits in on your calls, keeps the notes, and turns what was decided into follow-ups."
-        />
-
-        {!configured ? (
-          <Card className="mb-6 p-4 text-sm text-ink/60">
-            Not connected to the InboxOS backend. Set{" "}
-            <code className="text-ink">NEXT_PUBLIC_API_URL</code> to manage the notetaker. Showing
-            default preferences.
-          </Card>
-        ) : loading ? (
-          <Card className="mb-6 p-4 text-sm text-ink/50">Loading your notetaker…</Card>
-        ) : !connected ? (
-          <Card className="mb-6 p-4 text-sm text-ink/60">
-            Couldn&apos;t reach the InboxOS backend. Sign in and make sure it&apos;s running.
-          </Card>
-        ) : null}
-
-        <div className="space-y-6">
-          <Card className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-3">
-              <Toggle
-                checked={settings.enabled}
-                onChange={toggleEnabled}
-                disabled={controlsDisabled}
-                label="Notetaker enabled"
-              />
-              <div>
-                <div className="text-sm font-bold text-ink">
-                  Notetaker {settings.enabled ? "on" : "off"}
-                </div>
-                <div className="text-xs text-ink/50">
-                  {settings.enabled
-                    ? settings.auto_join
-                      ? "Joining your meetings automatically."
-                      : "Ready — turn it on per meeting, or switch on auto-join in Settings."
-                    : "No bot will join any meeting."}
-                </div>
-              </div>
-            </div>
-          </Card>
-
-          <Tabs tabs={[MEETINGS_TAB, SETTINGS_TAB]} active={tab} onChange={setTab} />
-
-          {!onSettingsTab && dirty ? (
-            <Card className="p-3 text-xs text-ink/50">
-              You have unsaved changes on the{" "}
-              <span className="font-semibold text-ink/70">{SETTINGS_TAB}</span> tab. Switch back to
-              save them.
-            </Card>
+      <div className="flex min-h-0 flex-1">
+        <div className="min-w-0 flex-1 overflow-y-auto px-6 py-5">
+          {banner ? (
+            <Card className="mb-4 p-4 text-sm text-ink/60">{banner}</Card>
           ) : null}
 
-          {onSettingsTab ? (
-            <NotetakerRules settings={settings} disabled={controlsDisabled} onChange={patch} />
+          {showSettings ? (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between gap-4">
+                <h2 className="text-lg font-bold tracking-tight text-ink">Notetaker settings</h2>
+                <Button variant="dark" disabled={!dirty || saving || !connected} onClick={save}>
+                  {saving ? "Saving…" : "Save changes"}
+                </Button>
+              </div>
+
+              <Card className="flex items-center gap-3 p-5">
+                <Toggle
+                  checked={settings.enabled}
+                  onChange={toggleEnabled}
+                  disabled={controlsDisabled}
+                  label="Notetaker enabled"
+                />
+                <div>
+                  <div className="text-sm font-bold text-ink">
+                    Notetaker {settings.enabled ? "on" : "off"}
+                  </div>
+                  <div className="text-xs text-ink/50">
+                    {settings.enabled
+                      ? settings.auto_join
+                        ? "Joining your meetings automatically."
+                        : "Ready — turn it on per meeting from the dashboard, or switch on auto-join below."
+                      : "No bot will join any meeting."}
+                  </div>
+                </div>
+              </Card>
+
+              <NotetakerRules settings={settings} disabled={controlsDisabled} onChange={patch} />
+            </div>
           ) : (
-            <MeetingList
-              meetings={meetings}
-              loading={loading}
-              cancellingId={cancellingId}
-              onCancel={cancelBot}
-            />
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center gap-3">
+                <Tabs tabs={[RECORDED_TAB, UPCOMING_TAB]} active={tab} onChange={setTab} />
+                <label className="flex min-w-[12rem] flex-1 items-center gap-2 rounded-xl border border-black/5 bg-card px-3.5 py-2.5">
+                  <SearchIcon className="h-4 w-4 shrink-0 text-ink/30" />
+                  <input
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="Search for meetings"
+                    className="min-w-0 flex-1 bg-transparent text-sm text-ink placeholder:text-ink/40 focus:outline-none"
+                  />
+                </label>
+              </div>
+
+              {/* The master switch lives in settings now, so being off has to
+                  announce itself here — otherwise an empty list looks like a
+                  bug rather than a setting. */}
+              {connected && !settings.enabled ? (
+                <Card className="flex flex-wrap items-center justify-between gap-3 border-accent/20 bg-accent/5 p-4">
+                  <span className="text-sm text-ink/70">
+                    The notetaker is off — no bot will join any meeting.
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => void toggleEnabled(true)}
+                    className="text-sm font-semibold text-accent hover:underline"
+                  >
+                    Turn it on
+                  </button>
+                </Card>
+              ) : null}
+
+              {dirty ? (
+                <Card className="p-3 text-xs text-ink/50">
+                  You have unsaved changes in settings. Open the gear to save them.
+                </Card>
+              ) : null}
+
+              <MeetingList
+                meetings={visible}
+                loading={loading}
+                cancellingId={cancellingId}
+                onCancel={cancelBot}
+                order={onUpcoming ? "soonest" : "newest"}
+                emptyMessage={
+                  query.trim()
+                    ? `No ${onUpcoming ? "upcoming" : "recorded"} meetings match "${query.trim()}".`
+                    : onUpcoming
+                      ? "Nothing scheduled — upcoming calls with the notetaker on will appear here."
+                      : "No meetings yet — they'll appear here once the notetaker joins its first call."
+                }
+              />
+            </div>
           )}
+        </div>
+
+        <div className="hidden w-[22rem] shrink-0 lg:block xl:w-[26rem]">
+          <InsightsPanel
+            headline={
+              <>
+                Stay <span className="text-accent">on top</span> of your meetings
+              </>
+            }
+            subhead="Ask questions and extract insights instantly."
+            suggestions={SUGGESTIONS}
+          />
         </div>
       </div>
 
       <Toast toast={toast} onDismiss={dismissToast} />
-    </>
+    </div>
   );
 }
