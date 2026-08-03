@@ -12,17 +12,21 @@ import {
   cancelSubscription,
   getPlans,
   getSubscription,
+  planName,
   type BillingPlan,
   type Subscription,
 } from "@/lib/billing";
 
-/** Describes the account's plan state in one line. Falls back to the raw
- *  plan_id/status if the catalog hasn't loaded yet or the plan was retired —
- *  better than showing nothing. */
+/** Settings is the one surface detailed enough to earn a status suffix on top
+ *  of the plan name — built on the shared `planName` lookup rather than
+ *  re-deriving it, so this and WorkspaceMenu can't drift apart on what the
+ *  plan is actually called the way "Free plan" already had. */
 function planSummary(sub: Subscription | null, plans: BillingPlan[]): string {
   if (!sub) return "Loading…";
-  if (sub.access === "locked" && !sub.plan_id) return "No active plan";
-  const name = plans.find((p) => p.id === sub.plan_id)?.name ?? sub.plan_id ?? "Plan";
+  const name = planName(sub, plans);
+  // No plan at all is already a complete sentence — a status suffix on top of
+  // it ("No active plan — inactive") would just repeat itself.
+  if (!sub.plan_id) return name;
   if (sub.status === "authenticated") return `${name} — free trial`;
   if (sub.status === "pending") return `${name} — payment failed`;
   if (sub.cancel_at_period_end) return `${name} — cancels at period end`;

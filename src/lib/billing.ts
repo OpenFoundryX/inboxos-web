@@ -95,3 +95,17 @@ export function daysLeft(trialEndsAt: string | null): number {
   const ms = new Date(trialEndsAt).getTime() - Date.now();
   return Math.max(0, Math.floor(ms / 86_400_000));
 }
+
+/** The plan's display name, or an explicit "no plan" state — never a
+ *  hardcoded default. Every place in the app that names the account's plan
+ *  (WorkspaceMenu, Settings) should read this rather than keep its own copy,
+ *  so a "Free plan" placeholder can't drift out of sync with reality the way
+ *  it already has twice. Status nuance (trial countdown, past due, cancels-
+ *  at-period-end) is deliberately not folded in here — that's TrialPill's and
+ *  SubscribeBanner's job, and repeating it in a third place is how a fourth
+ *  contradiction gets introduced later. */
+export function planName(sub: Subscription | null, plans: BillingPlan[]): string {
+  if (!sub) return "";
+  if (!sub.plan_id) return "No active plan";
+  return plans.find((p) => p.id === sub.plan_id)?.name ?? sub.plan_id;
+}
