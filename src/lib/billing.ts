@@ -27,11 +27,14 @@ export type BillingPlan = {
 };
 
 export function getSubscription() {
-  return apiFetch<Subscription>("/v1/billing/subscription");
+  // Paths are relative to the API prefix: `apiFetch` already prepends `/api`,
+  // and the Next proxy maps that onto the backend's `/v1`. Writing `/v1/...`
+  // here would land as `/v1/v1/billing/...` and 404.
+  return apiFetch<Subscription>("/billing/subscription");
 }
 
 export function getPlans() {
-  return apiFetch<{ plans: BillingPlan[]; trial_days: number }>("/v1/billing/plans");
+  return apiFetch<{ plans: BillingPlan[]; trial_days: number }>("/billing/plans");
 }
 
 type CheckoutSession = {
@@ -62,7 +65,7 @@ export async function startCheckout(
   interval: "monthly" | "annual",
   opts: { onDismiss?: () => void } = {},
 ) {
-  const session = await apiFetch<CheckoutSession>("/v1/billing/checkout", {
+  const session = await apiFetch<CheckoutSession>("/billing/checkout", {
     method: "POST",
     body: JSON.stringify({ plan_id: planId, interval }),
   });
@@ -85,7 +88,7 @@ export async function startCheckout(
 }
 
 export function cancelSubscription() {
-  return apiFetch<Subscription>("/v1/billing/cancel", { method: "POST" });
+  return apiFetch<Subscription>("/billing/cancel", { method: "POST" });
 }
 
 /** Whole days left, floored, never negative. A pill that reads "-3 days left"
