@@ -30,6 +30,30 @@ async function errorMessage(res: Response): Promise<string> {
  *  refreshing a refresh would recurse. */
 const REFRESH_PATH = "/auth/refresh";
 
+/** Where a 402 sends the browser. The backend returns this status from any
+ *  feature endpoint once `require_entitled`/`entitlements.check` decides the
+ *  account is locked (no subscription, trial elapsed, quota exhausted) or the
+ *  plan doesn't include the feature — see `services/billing/dependencies.py`.
+ *  Handled once, here, rather than in every caller: a component-by-component
+ *  catch is exactly the kind of second entrance that has already let a gate
+ *  go missing more than once on this branch (see the ledger's recurring
+ *  "second-path" findings). */
+const PLAN_PICKER_PATH = "/onboarding/plan";
+
+/** A full navigation, not a router push: this module has no access to
+ *  Next's router (it isn't a hook, and is called from plain async
+ *  functions), and a hard redirect is also the right behaviour here — the
+ *  in-flight page's state was built for an entitled account and shouldn't be
+ *  patched around a 402 that showed up mid-session. Already on the plan
+ *  picker itself, do nothing: fetches from that very page (e.g. checking
+ *  status while abandoned/returning) must not bounce it to itself.
+ */
+function redirectToPlanPicker(): void {
+  if (typeof window === "undefined") return;
+  if (window.location.pathname === PLAN_PICKER_PATH) return;
+  window.location.href = PLAN_PICKER_PATH;
+}
+
 /** In-flight refresh, shared by every caller that 401s at the same moment.
  *
  *  This has to be deduplicated. The backend spends refresh tokens single-use
@@ -85,6 +109,10 @@ export async function apiFetch<T>(
     if (await refreshSession()) {
       res = await send(path, init);
     }
+  }
+
+  if (res.status === 402) {
+    redirectToPlanPicker();
   }
 
   if (!res.ok) {

@@ -4,7 +4,6 @@ import EmailFlow from "@/components/marketing/EmailFlow";
 import ValueStack from "@/components/marketing/ValueStack";
 import Pricing from "@/components/marketing/Pricing";
 import PlanComparison from "@/components/marketing/PlanComparison";
-import AddOns from "@/components/marketing/AddOns";
 
 export default function LandingPage() {
   return (
@@ -98,7 +97,6 @@ export default function LandingPage() {
       <ValueStack />
       <Pricing />
       <PlanComparison />
-      <AddOns />
     </>
   );
 }

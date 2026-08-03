@@ -18,6 +18,10 @@ export const LEGAL = {
   privacyEmail: TODO("privacy contact address"),
   supportEmail: TODO("support contact address"),
   legalEmail: TODO("legal notices address"),
+  /** Where Team/Enterprise's "Talk to us" CTAs point — those tiers have no
+   *  Checkout path (no workspace/org model exists yet to sell against), so
+   *  routing them anywhere but a real human contact is dishonest. */
+  salesEmail: TODO("sales contact address"),
   /** Only needed if you have EU/UK users and appoint one. */
   euRepresentative: TODO("EU/UK representative, or delete this line"),
 } as const;

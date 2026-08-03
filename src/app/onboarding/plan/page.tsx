@@ -8,6 +8,15 @@ import { getPlans, startCheckout, type BillingPlan } from "@/lib/billing";
 
 type Interval = "monthly" | "annual";
 
+// Deliberately no "already has a plan_id, skip straight to the dashboard"
+// check on mount here. `plan_id` is set the instant `POST /checkout`
+// succeeds — before the Razorpay modal even opens — so a currently-trialing
+// user (TrialPill links here) and a locked, churned user re-subscribing
+// (SubscribeBanner links here) both already have it set, same as someone
+// mid-checkout. An auto-redirect keyed on `plan_id` alone would bounce
+// exactly the two audiences this page has to stay reachable for; see
+// `dashboard/layout.tsx` for the one place that distinguishes "never chosen
+// a plan" (the real I9 gate) from "chose one, now locked or renewing".
 export default function PlanPage() {
   const [plans, setPlans] = useState<BillingPlan[]>([]);
   const [trialDays, setTrialDays] = useState(7);
