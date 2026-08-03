@@ -12,6 +12,13 @@ export default function OnboardingLayout({ children }: { children: React.ReactNo
   const pathname = usePathname();
   const [ready, setReady] = useState(false);
 
+  // The plan picker is reached from TrialPill/SubscribeBanner on the dashboard,
+  // i.e. precisely by users who *are* already onboarded — a locked or past-due
+  // account doesn't stop being onboarded. It has to be exempt from the
+  // "already finished, don't wander back into the wizard" redirect below, the
+  // same way /onboarding/connect is exempt from the connected check.
+  const isPlanPage = pathname.startsWith("/onboarding/plan");
+
   useEffect(() => {
     let active = true;
     checkAccess().then(({ authed, connected, onboarded }) => {
@@ -34,8 +41,9 @@ export default function OnboardingLayout({ children }: { children: React.ReactNo
         return;
       }
       // Connected and already finished → the wizard is not somewhere to wander
-      // back into.
-      if (onboarded) {
+      // back into. The plan picker is the one exception: it's a billing
+      // destination that reuses the wizard's visual shell, not a step in it.
+      if (onboarded && !isPlanPage) {
         router.replace("/dashboard");
         return;
       }
@@ -44,7 +52,7 @@ export default function OnboardingLayout({ children }: { children: React.ReactNo
     return () => {
       active = false;
     };
-  }, [router, pathname]);
+  }, [router, pathname, isPlanPage]);
 
   if (!ready) {
     return (
@@ -72,11 +80,16 @@ export default function OnboardingLayout({ children }: { children: React.ReactNo
           viewport rather than hugging the top. py-24 keeps it clear of the
           header once a tall step stops fitting in the centred space. */}
       <main className="relative flex min-h-screen items-center justify-center px-5 py-24">
-        <div className="w-full max-w-xl">
-          <OnboardingStepper />
+        {/* The plan picker isn't a numbered step in the wizard — it's a billing
+            destination for already-onboarded users — so it skips the stepper
+            and gets a wider canvas for the plan grid. */}
+        <div className={isPlanPage ? "w-full max-w-4xl" : "w-full max-w-xl"}>
+          {!isPlanPage && <OnboardingStepper />}
           <div
             key={pathname}
-            className="animate-step-in mt-5 rounded-[28px] border border-white/60 bg-card/80 p-6 shadow-[0_1px_2px_rgba(26,29,38,0.04),0_24px_70px_-28px_rgba(26,29,38,0.35)] backdrop-blur-xl sm:p-9"
+            className={`animate-step-in rounded-[28px] border border-white/60 bg-card/80 p-6 shadow-[0_1px_2px_rgba(26,29,38,0.04),0_24px_70px_-28px_rgba(26,29,38,0.35)] backdrop-blur-xl sm:p-9 ${
+              isPlanPage ? "" : "mt-5"
+            }`}
           >
             {children}
           </div>

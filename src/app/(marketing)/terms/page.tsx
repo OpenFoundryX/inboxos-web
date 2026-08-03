@@ -63,7 +63,7 @@ export default function TermsPage() {
             front at the discounted rate.
           </li>
           <li>
-            <strong>Trial.</strong> The Pro trial runs 14 days and includes 3
+            <strong>Trial.</strong> The Pro trial runs 7 days and includes 3
             bot-hours. When either limit is reached the trial ends. Trials are
             once per customer.
           </li>

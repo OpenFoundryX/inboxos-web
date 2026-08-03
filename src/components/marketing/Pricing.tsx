@@ -133,7 +133,7 @@ export default function Pricing() {
       </div>
 
       <p className="mt-8 text-center text-sm text-ink/50">
-        The Pro trial runs 14 days and includes 3 bot-hours. Outlook is still in
+        The Pro trial runs 7 days and includes 3 bot-hours. Outlook is still in
         development and isn&apos;t billed on any plan yet.
       </p>
     </section>

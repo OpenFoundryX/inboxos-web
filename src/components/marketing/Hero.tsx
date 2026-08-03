@@ -14,7 +14,7 @@ export default function Hero() {
       <div className="mt-9 flex flex-col items-center gap-4">
         <div className="flex flex-wrap items-center justify-center gap-3">
           <Button variant="dark" href="/login">
-            Start 14-day Pro trial
+            Start 7-day Pro trial
           </Button>
           <Button variant="outline" href="#pricing">
             Compare plans
