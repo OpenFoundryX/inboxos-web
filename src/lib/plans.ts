@@ -31,7 +31,6 @@ export const PLANS: Plan[] = [
     highlights: [
       "1 mailbox",
       "5 bot-hours a month",
-      "Overage $0.90 / hour",
       "Scheduling helpers only",
     ],
   },
@@ -42,12 +41,11 @@ export const PLANS: Plan[] = [
     monthly: 39,
     annual: 29,
     unit: "per seat / month",
-    cta: "Start 14-day Pro trial",
+    cta: "Start 7-day Pro trial",
     featured: true,
     highlights: [
-      "2 mailboxes",
+      "1 mailbox",
       "15 bot-hours a month",
-      "Overage $0.80 / hour",
       "40 scheduling threads",
     ],
   },
@@ -58,11 +56,10 @@ export const PLANS: Plan[] = [
     monthly: 59,
     annual: 49,
     unit: "per seat / month",
-    cta: "Start free trial",
+    cta: "Talk to us",
     highlights: [
       "3 mailboxes per seat",
       "25 bot-hours per seat",
-      "Overage $0.70 / hour",
       "100 scheduling threads per seat",
     ],
   },
@@ -209,7 +206,9 @@ export const FEATURE_GROUPS: FeatureGroup[] = [
       },
       {
         label: "Push recaps to CRM and Slack",
-        cells: { starter: false, pro: "Add-on", team: true, enterprise: true },
+        // Was "Add-on" on Pro — the add-ons themselves (this one included)
+        // are all deferred past v1, so there is nothing to sell here yet.
+        cells: { starter: false, pro: false, team: true, enterprise: true },
       },
     ],
   },
@@ -262,56 +261,15 @@ export const FEATURE_GROUPS: FeatureGroup[] = [
         },
       },
       {
-        label: "Scheduling overage",
-        cells: {
-          starter: false,
-          pro: "$0.50 / thread",
-          team: "$0.35 / thread",
-          enterprise: "Volume",
-        },
-      },
-      {
         label: "SMS and WhatsApp coordination",
-        cells: { starter: false, pro: false, team: "Add-on", enterprise: true },
+        // Was "Add-on" on Team — deferred along with the rest of the add-ons.
+        cells: { starter: false, pro: false, team: false, enterprise: true },
       },
       {
         label: "Team pool calendar and round-robin",
         cells: { starter: false, pro: false, team: true, enterprise: true },
       },
     ],
-  },
-];
-
-export const ADD_ONS = [
-  {
-    name: "Extra bot-hours",
-    price: "$7",
-    unit: "per 10-hour pack",
-    note: "Prepaid at roughly $0.70 an hour.",
-  },
-  {
-    name: "Extra mailbox",
-    price: "$8",
-    unit: "per month",
-    note: "Beyond what your plan includes.",
-  },
-  {
-    name: "SMS and WhatsApp for Vela",
-    price: "$15",
-    unit: "per seat / month",
-    note: "Carrier charges passed through where they apply.",
-  },
-  {
-    name: "CRM recap sync",
-    price: "$10",
-    unit: "per seat / month",
-    note: "HubSpot and Salesforce. Included on Team.",
-  },
-  {
-    name: "Priority support",
-    price: "$20",
-    unit: "per month",
-    note: "Under four business hours. Starter and Pro only.",
   },
 ];
 
@@ -326,4 +284,19 @@ export const ALTERNATIVES = [
 
 export const ALTERNATIVES_TOTAL = "$50–80";
 
-export const ANNUAL_SAVING_LABEL = "Save 25%";
+/** A single flat percentage across both purchasable tiers would be a guess
+ *  that reads as precise: $19→$15 is 21% off, $39→$29 is 26% off. Computed
+ *  from the same numbers the cards render, rather than a second
+ *  hand-maintained figure that can drift the way "Save 25%" already had
+ *  (neither tier's real discount) — this file's whole reason for existing. */
+function annualSavingsPercent(plan: Plan): number | null {
+  if (plan.monthly === null || plan.annual === null || plan.monthly === 0) return null;
+  return Math.round((1 - plan.annual / plan.monthly) * 100);
+}
+
+const PURCHASABLE_SAVINGS = ["starter", "pro"]
+  .map((id) => PLANS.find((p) => p.id === id))
+  .map((plan) => (plan ? annualSavingsPercent(plan) : null))
+  .filter((p): p is number => p !== null);
+
+export const ANNUAL_SAVING_LABEL = `Save up to ${Math.max(...PURCHASABLE_SAVINGS)}%`;

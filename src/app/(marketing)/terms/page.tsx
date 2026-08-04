@@ -63,20 +63,16 @@ export default function TermsPage() {
             front at the discounted rate.
           </li>
           <li>
-            <strong>Trial.</strong> The Pro trial runs 14 days and includes 3
-            bot-hours. When either limit is reached the trial ends. Trials are
-            once per customer.
+            <strong>Trial.</strong> The Pro trial runs 7 days and includes
+            Pro&rsquo;s full monthly bot-hour and AI draft allowance. The
+            trial ends when the 7 days are up, not before, and card
+            authorisation is required up front. Trials are once per customer.
           </li>
           <li>
             <strong>Metered usage.</strong> Meeting bot-hours and scheduling
             threads are metered. Bot-hours are measured as recorded bot time,
             prorated to the second. Included allowances reset each billing month
             and <strong>do not roll over</strong>.
-          </li>
-          <li>
-            <strong>Overage.</strong> Usage beyond your allowance is billed at
-            your plan&rsquo;s published rate and charged in arrears with your
-            next invoice.
           </li>
           <li>
             <strong>Changes.</strong> Upgrades take effect immediately and are

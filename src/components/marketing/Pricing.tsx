@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
+import { LEGAL } from "@/lib/legal";
 import {
   PLANS,
   ANNUAL_SAVING_LABEL,
@@ -10,6 +11,20 @@ import {
 } from "@/lib/plans";
 
 type Period = "annual" | "monthly";
+
+/** Starter and Pro are the only tiers `POST /billing/checkout` knows about —
+ *  Team and Enterprise are per-seat, pooled-quota tiers with no workspace/org
+ *  model in the codebase (see the billing spec's scope), so their CTA can't
+ *  be the same `/login` -> onboarding -> Checkout path without landing a buyer
+ *  on a dashboard that only offers the two tiers they didn't click. A mailto
+ *  keeps the promise "talk to us" actually makes, rather than routing them
+ *  into a sign-up flow that has nothing to sell them. */
+function ctaHref(plan: Plan): string {
+  if (plan.id === "team" || plan.id === "enterprise") {
+    return `mailto:${LEGAL.salesEmail}?subject=${encodeURIComponent(`InboxOS ${plan.name}`)}`;
+  }
+  return "/login";
+}
 
 function BillingToggle({
   period,
@@ -112,7 +127,7 @@ export default function Pricing() {
 
             <Button
               variant={plan.featured ? "primary" : "outline"}
-              href="/login"
+              href={ctaHref(plan)}
               className="mt-6 w-full"
             >
               {plan.cta}
@@ -133,7 +148,8 @@ export default function Pricing() {
       </div>
 
       <p className="mt-8 text-center text-sm text-ink/50">
-        The Pro trial runs 14 days and includes 3 bot-hours. Outlook is still in
+        The Pro trial runs 7 days with Pro&apos;s full 15 bot-hours included,
+        card required up front, once per customer. Outlook is still in
         development and isn&apos;t billed on any plan yet.
       </p>
     </section>

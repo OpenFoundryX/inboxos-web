@@ -1,20 +1,44 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { signOut } from "@/lib/auth";
 import { backendConfigured, logout } from "@/lib/session";
+import {
+  getPlans,
+  getSubscription,
+  planName,
+  type BillingPlan,
+  type Subscription,
+} from "@/lib/billing";
 import { ChevronDownIcon, SignOutIcon } from "./icons";
 
 export default function WorkspaceMenu() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [sub, setSub] = useState<Subscription | null>(null);
+  const [plans, setPlans] = useState<BillingPlan[]>([]);
+
+  useEffect(() => {
+    if (!backendConfigured()) return;
+    getSubscription().then(setSub).catch(() => setSub(null));
+    getPlans()
+      .then((body) => setPlans(body.plans))
+      .catch(() => setPlans([]));
+  }, []);
 
   async function handleSignOut() {
     if (backendConfigured()) await logout();
     signOut();
     router.replace("/");
   }
+
+  // Sourced from the same subscription the trial pill above this reads —
+  // "Free plan" used to be hardcoded here regardless of what plan (or trial,
+  // or lack of one) was actually active, which contradicted TrialPill's
+  // countdown by about 40px. Blank while unconfigured/unloaded rather than a
+  // fabricated default: no line is better than a wrong one.
+  const label = backendConfigured() ? planName(sub, plans) : "";
 
   return (
     <div className="relative">
@@ -38,7 +62,9 @@ export default function WorkspaceMenu() {
         </span>
         <span className="min-w-0 flex-1">
           <span className="block truncate text-sm font-semibold text-ink">Your Workspace</span>
-          <span className="block truncate text-xs text-ink/50">Free plan</span>
+          {label ? (
+            <span className="block truncate text-xs text-ink/50">{label}</span>
+          ) : null}
         </span>
         <ChevronDownIcon className="h-4 w-4 text-ink/40" />
       </button>
