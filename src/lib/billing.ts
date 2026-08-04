@@ -8,6 +8,14 @@ export type Subscription = {
   status: string | null;
   trial_ends_at: string | null;
   cancel_at_period_end: boolean;
+  // Whether this user has ever actually authorised a subscription — a signed
+  // Razorpay mandate, not merely `plan_id` being set. `plan_id` is written
+  // the instant the Razorpay subscription object is created server-side,
+  // before the checkout modal even opens, so it's `true` even for someone
+  // who closed the modal without paying. This is what `dashboard/layout.tsx`'s
+  // paywall gate reads instead — see `schemas.billing.SubscriptionOut` for
+  // the full status-set reasoning.
+  subscription_started: boolean;
   // Whether checking out right now would grant a free trial rather than
   // charge immediately. `false` for anyone whose trial is already consumed
   // (see `api/v1/billing.py`'s `start_checkout`) — the plan picker must not

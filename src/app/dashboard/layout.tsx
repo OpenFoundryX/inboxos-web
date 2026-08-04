@@ -23,20 +23,26 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         return;
       }
       // The wizard itself is done, but the paywall's "before dashboard" gate
-      // is a second, independent check: `plan_id` is only ever set once a
-      // checkout has actually been started (see `api.v1.billing.
-      // start_checkout`), so a user who reached the end of onboarding
-      // without ever picking a plan — including one who abandoned the plan
-      // step and is only now returning — has `plan_id === null` here and
-      // gets sent back to finish it. A user whose subscription later goes
-      // locked or churns keeps `plan_id` set from when they first chose one,
-      // so this never bounces them: the dashboard stays reachable read-only,
-      // per the spec, for anyone who has already been through this gate once.
+      // is a second, independent check: it must confirm the user actually
+      // authorised a subscription, not just that `plan_id` is set. `plan_id`
+      // is written by `start_checkout` the instant the Razorpay subscription
+      // is created server-side — before the checkout modal even opens — so a
+      // user who clicked a plan and then closed the modal without signing a
+      // mandate already has `plan_id` set despite having authorised nothing.
+      // `subscription_started` (see `schemas.billing.SubscriptionOut`) is the
+      // field that actually answers "did this happen": derived from
+      // Razorpay's status, it's `false` only for `created`/`expired`/no row
+      // at all — exactly the abandoned-modal and never-checked-out cases —
+      // so those are the only ones sent back to finish it. A user whose
+      // subscription later goes locked or churns keeps `subscription_started`
+      // true from when they first authorised, so this never bounces them:
+      // the dashboard stays reachable read-only, per the spec, for anyone
+      // who has already been through this gate once.
       if (backendConfigured()) {
         try {
           const sub = await getSubscription();
           if (!active) return;
-          if (!sub.plan_id) {
+          if (!sub.subscription_started) {
             router.replace("/onboarding/plan");
             return;
           }
