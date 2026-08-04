@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
-import { getPlans, startCheckout, type BillingPlan } from "@/lib/billing";
+import { getPlans, getSubscription, startCheckout, type BillingPlan } from "@/lib/billing";
 
 type Interval = "monthly" | "annual";
 
@@ -14,6 +14,10 @@ type Interval = "monthly" | "annual";
 export default function PlanPicker() {
   const [plans, setPlans] = useState<BillingPlan[]>([]);
   const [trialDays, setTrialDays] = useState(7);
+  // Defaults to available so there's no false "you'll be charged now" flash
+  // before `getSubscription` resolves — a brand-new signup (no row yet) is
+  // always trial-eligible, and that's who hits this default most often.
+  const [trialAvailable, setTrialAvailable] = useState(true);
   const [interval, setInterval] = useState<Interval>("monthly");
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -25,14 +29,23 @@ export default function PlanPicker() {
         setTrialDays(body.trial_days);
       })
       .catch(() => setPlans([]));
+    // Churned users land here too (`SubscribeBanner` routes them straight to
+    // checkout) — their trial is already consumed, so the copy below must
+    // not promise one. Left at its trial-eligible default on failure: a
+    // wrong "free trial" claim on a fetch error is no worse than what this
+    // page already said before `trial_available` existed.
+    getSubscription()
+      .then((sub) => setTrialAvailable(sub.trial_available))
+      .catch(() => {});
   }, []);
 
   return (
     <div className="mx-auto max-w-3xl">
       <h1 className="text-xl font-bold text-ink">Choose your plan</h1>
       <p className="mt-1 text-sm text-ink/60">
-        {trialDays} days free on first checkout. Cancel any time before then and
-        you won&apos;t be charged.
+        {trialAvailable
+          ? `${trialDays} days free on first checkout. Cancel any time before then and you won't be charged.`
+          : "You'll be charged for your selected plan as soon as checkout completes."}
       </p>
 
       <div className="mt-6 flex gap-2">
@@ -87,7 +100,11 @@ export default function PlanPicker() {
                   });
                 }}
               >
-                {busy === plan.id ? "Opening checkout…" : `Start ${trialDays}-day trial`}
+                {busy === plan.id
+                  ? "Opening checkout…"
+                  : trialAvailable
+                    ? `Start ${trialDays}-day trial`
+                    : "Subscribe"}
               </Button>
             </Card>
           );

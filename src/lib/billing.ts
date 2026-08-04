@@ -8,6 +8,11 @@ export type Subscription = {
   status: string | null;
   trial_ends_at: string | null;
   cancel_at_period_end: boolean;
+  // Whether checking out right now would grant a free trial rather than
+  // charge immediately. `false` for anyone whose trial is already consumed
+  // (see `api/v1/billing.py`'s `start_checkout`) — the plan picker must not
+  // promise a free trial to those users.
+  trial_available: boolean;
   usage: {
     bot_hours_used: number;
     bot_hours_included: number;
