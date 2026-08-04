@@ -38,7 +38,7 @@ const REFRESH_PATH = "/auth/refresh";
  *  catch is exactly the kind of second entrance that has already let a gate
  *  go missing more than once on this branch (see the ledger's recurring
  *  "second-path" findings). */
-const PLAN_PICKER_PATH = "/onboarding/plan";
+const PLAN_PICKER_PATH = "/dashboard/billing";
 
 /** A full navigation, not a router push: this module has no access to
  *  Next's router (it isn't a hook, and is called from plain async
@@ -50,7 +50,9 @@ const PLAN_PICKER_PATH = "/onboarding/plan";
  */
 function redirectToPlanPicker(): void {
   if (typeof window === "undefined") return;
-  if (window.location.pathname === PLAN_PICKER_PATH) return;
+  const path = window.location.pathname;
+  // Either picker is fine — don't bounce between them mid-session.
+  if (path === PLAN_PICKER_PATH || path === "/onboarding/plan") return;
   window.location.href = PLAN_PICKER_PATH;
 }
 

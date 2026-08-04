@@ -20,7 +20,7 @@ export default function TrialPill() {
 
   return (
     <Link
-      href="/onboarding/plan"
+      href="/dashboard/billing"
       className="flex items-center justify-between rounded-xl border border-black/5 bg-canvas px-3 py-2 text-xs font-medium text-ink/70 hover:text-ink"
     >
       <span className="flex items-center gap-2">

@@ -41,7 +41,7 @@ export default function SubscribeBanner() {
         </div>
       </div>
       <a
-        href={pastDue ? "/dashboard/settings" : "/onboarding/plan"}
+        href={pastDue ? "/dashboard/settings" : "/dashboard/billing"}
         className="shrink-0 text-sm font-semibold text-accent transition-colors hover:text-accent-dark"
       >
         {pastDue ? "View billing →" : "View plans →"}

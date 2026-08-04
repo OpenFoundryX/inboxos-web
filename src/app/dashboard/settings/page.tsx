@@ -105,7 +105,7 @@ export default function SettingsPage() {
                   <div className="mt-1 text-xs text-ink/50">{planSummary(sub, plans)}</div>
                 </div>
                 {showViewPlans && (
-                  <Button variant="outline" href="/onboarding/plan">
+                  <Button variant="outline" href="/dashboard/billing">
                     View plans
                   </Button>
                 )}
