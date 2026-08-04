@@ -75,11 +75,6 @@ export default function TermsPage() {
             and <strong>do not roll over</strong>.
           </li>
           <li>
-            <strong>Overage.</strong> Usage beyond your allowance is billed at
-            your plan&rsquo;s published rate and charged in arrears with your
-            next invoice.
-          </li>
-          <li>
             <strong>Changes.</strong> Upgrades take effect immediately and are
             prorated. Downgrades take effect at the end of your current term.
           </li>

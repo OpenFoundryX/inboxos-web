@@ -60,7 +60,6 @@ export const PLANS: Plan[] = [
     highlights: [
       "3 mailboxes per seat",
       "25 bot-hours per seat",
-      "Overage $0.70 / hour",
       "100 scheduling threads per seat",
     ],
   },
