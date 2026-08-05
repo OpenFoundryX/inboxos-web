@@ -318,3 +318,21 @@ export function VideoIcon(p: IconProps) {
     </Base>
   );
 }
+
+export function WarnIcon(p: IconProps) {
+  return (
+    <Base {...p}>
+      <path d="M12 4 2.5 20h19L12 4Z" />
+      <path d="M12 10v4" />
+      <path d="M12 17.5v.01" />
+    </Base>
+  );
+}
+
+export function XIcon(p: IconProps) {
+  return (
+    <Base {...p}>
+      <path d="M6 6l12 12M18 6 6 18" />
+    </Base>
+  );
+}
