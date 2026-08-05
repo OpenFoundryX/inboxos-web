@@ -10,6 +10,9 @@ import MeetingList from "@/components/notetaker/MeetingList";
 import NotetakerRules from "@/components/notetaker/NotetakerRules";
 import InsightsPanel from "@/components/notetaker/InsightsPanel";
 import RecordMeetingMenu from "@/components/notetaker/RecordMeetingMenu";
+import InviteToMeetingModal from "@/components/notetaker/InviteToMeetingModal";
+import UploadRecordingModal from "@/components/notetaker/UploadRecordingModal";
+import LiveRecorder from "@/components/notetaker/LiveRecorder";
 import { SearchIcon, SettingsIcon } from "@/components/app/icons";
 import { backendConfigured } from "@/lib/session";
 import {
@@ -20,9 +23,11 @@ import {
   isInFlight,
   isUpcoming,
   matchesQuery,
+  startLiveRecording,
   updateNotetakerSettings,
   type MeetingRead,
   type NotetakerSettings,
+  type UploadTarget,
 } from "@/lib/meetings";
 
 const RECORDED_TAB = "Recorded";
@@ -50,6 +55,14 @@ export default function NotetakerPage() {
   const [saving, setSaving] = useState(false);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const [toast, setToast] = useState<ToastMessage | null>(null);
+  const [showInvite, setShowInvite] = useState(false);
+  const [showUpload, setShowUpload] = useState(false);
+  // Non-null while a browser recording is running. Holds the row and the
+  // upload permission the server issued when it started, so stopping has
+  // somewhere to send the audio without another round trip at the one moment
+  // where a failure would lose the recording.
+  const [liveTarget, setLiveTarget] = useState<UploadTarget | null>(null);
+  const [startingLive, setStartingLive] = useState(false);
 
   const notify = useCallback((text: string, variant: ToastVariant = "success") => {
     // Date.now() as the id so the same message twice replays the animation.
@@ -187,6 +200,53 @@ export default function NotetakerPage() {
     }
   }
 
+  /** Put a newly captured meeting at the top of the list without waiting for a
+   *  poll. The row exists server-side either way; this is only about the page
+   *  reflecting what the user just did. */
+  const adopt = useCallback((meeting: MeetingRead) => {
+    setMeetings((list) => [meeting, ...list.filter((m) => m.id !== meeting.id)]);
+  }, []);
+
+  async function startRecording() {
+    if (liveTarget || startingLive) return;
+    setStartingLive(true);
+    try {
+      // The row and the upload URL are claimed before the microphone is
+      // touched: a permission prompt the user accepts, followed by a 402 for
+      // being over quota, would be a recording with nowhere to go.
+      const target = await startLiveRecording();
+      setLiveTarget(target);
+      adopt(target.meeting);
+      // The tab shows recorded meetings — including this one, live.
+      setTab(RECORDED_TAB);
+      setShowSettings(false);
+    } catch (e) {
+      notify(e instanceof Error ? e.message : "Couldn't start recording", "error");
+    } finally {
+      setStartingLive(false);
+    }
+  }
+
+  const finishRecording = useCallback(
+    (meeting: MeetingRead) => {
+      setLiveTarget(null);
+      adopt(meeting);
+      notify("Recording saved — the summary will appear shortly");
+    },
+    [adopt, notify],
+  );
+
+  const failRecording = useCallback(
+    (message: string) => {
+      setLiveTarget(null);
+      notify(message, "error");
+      // The reserved row is now a meeting with no media. The server's janitor
+      // fails it within the day; refreshing just keeps the list honest sooner.
+      void refreshMeetings();
+    },
+    [notify, refreshMeetings],
+  );
+
   const controlsDisabled = configured && !connected;
   const onUpcoming = tab === UPCOMING_TAB;
 
@@ -213,7 +273,12 @@ export default function NotetakerPage() {
       <header className="flex shrink-0 items-center justify-between gap-4 border-b border-black/5 bg-card px-6 py-3">
         <h1 className="text-base font-bold text-ink">Notetaker</h1>
         <div className="flex shrink-0 items-center gap-2">
-          <RecordMeetingMenu />
+          <RecordMeetingMenu
+            recording={liveTarget !== null || startingLive}
+            onRecordNow={startRecording}
+            onInvite={() => setShowInvite(true)}
+            onUpload={() => setShowUpload(true)}
+          />
           <button
             type="button"
             onClick={() => setShowSettings((s) => !s)}
@@ -335,6 +400,37 @@ export default function NotetakerPage() {
           />
         </div>
       </div>
+
+      {/* Pinned below the list rather than inside it: the recorder has to
+          outlive tab switches and searches, and unmounting it would drop the
+          microphone mid-meeting. */}
+      {liveTarget ? (
+        <div className="shrink-0 border-t border-black/5 bg-canvas px-6 py-4">
+          <LiveRecorder
+            target={liveTarget}
+            onFinished={finishRecording}
+            onFailed={failRecording}
+          />
+        </div>
+      ) : null}
+
+      <InviteToMeetingModal
+        open={showInvite}
+        onClose={() => setShowInvite(false)}
+        onJoined={(meeting) => {
+          adopt(meeting);
+          notify("Notetaker is joining the call");
+        }}
+      />
+
+      <UploadRecordingModal
+        open={showUpload}
+        onClose={() => setShowUpload(false)}
+        onUploaded={(meeting) => {
+          adopt(meeting);
+          notify("Recording uploaded — the summary will appear shortly");
+        }}
+      />
 
       <Toast toast={toast} onDismiss={dismissToast} />
     </div>

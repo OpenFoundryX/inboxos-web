@@ -11,7 +11,8 @@ export type MeetingRead = {
   id: string;
   source: string;
   title: string | null;
-  meeting_url: string;
+  /** Null for uploads and browser recordings — there was no call to join. */
+  meeting_url: string | null;
   platform: string | null;
   starts_at: string | null;
   ends_at: string | null;
@@ -77,6 +78,126 @@ export const updateNotetakerSettings = (body: NotetakerSettingsUpdate) =>
 export const cancelMeetingBot = (id: string) =>
   apiFetch<MeetingRead>(`/meetings/${id}/bot`, { method: "DELETE" });
 
+export const joinMeeting = (meetingUrl: string, title?: string) =>
+  apiFetch<MeetingRead>("/meetings/join", {
+    method: "POST",
+    body: JSON.stringify({ meeting_url: meetingUrl, title: title || null }),
+  });
+
+/* ------------------------------------------------------------------ capture */
+
+/** Permission to PUT one object, plus the row it belongs to. Mirrors
+ *  `schemas/meetings.UploadTarget`. */
+export type UploadTarget = {
+  meeting: MeetingRead;
+  upload_url: string;
+  headers: Record<string, string>;
+  expires_at: string;
+};
+
+/** What MediaRecorder produces, and what the server signs a live upload for.
+ *  Must match `services/meetings/media.LIVE_CONTENT_TYPE` — the content type is
+ *  part of the signature, so a mismatch is rejected by the bucket. */
+export const LIVE_MIME = "audio/webm";
+
+const startUpload = (body: {
+  filename: string | null;
+  content_type: string;
+  size_bytes: number;
+  title: string | null;
+  calendar_event_id: string | null;
+}) => apiFetch<UploadTarget>("/meetings/uploads", { method: "POST", body: JSON.stringify(body) });
+
+export const startLiveRecording = (title?: string) =>
+  apiFetch<UploadTarget>("/meetings/live", {
+    method: "POST",
+    body: JSON.stringify({ title: title || null }),
+  });
+
+const completeUpload = (id: string) =>
+  apiFetch<MeetingRead>(`/meetings/${id}/uploads/complete`, { method: "POST" });
+
+/**
+ * PUT a blob straight to the bucket.
+ *
+ * Deliberately not `apiFetch`: this request goes to S3, not to our API, and
+ * must carry none of our cookies or auth headers — sending them to a third
+ * party would leak them, and S3 rejects unexpected signed headers anyway.
+ *
+ * XHR rather than fetch because only XHR reports upload progress, and a
+ * gigabyte with no progress bar looks identical to a hang.
+ */
+function putToBucket(
+  target: UploadTarget,
+  blob: Blob,
+  onProgress?: (fraction: number) => void,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("PUT", target.upload_url, true);
+    for (const [name, value] of Object.entries(target.headers)) {
+      xhr.setRequestHeader(name, value);
+    }
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable && onProgress) onProgress(e.loaded / e.total);
+    };
+    xhr.onload = () =>
+      xhr.status >= 200 && xhr.status < 300
+        ? resolve()
+        : // The body is S3's XML error. Surfacing the status alone is enough
+          // for the user; the detail belongs in the console, not a toast.
+          reject(new Error(`Upload failed (${xhr.status})`));
+    // A network-level failure here is very often the bucket's CORS rule
+    // missing rather than the network being down, and the browser deliberately
+    // hides which. Saying so beats "an error occurred".
+    xhr.onerror = () =>
+      reject(new Error("Upload failed — the storage bucket may not allow uploads from this site"));
+    xhr.onabort = () => reject(new Error("Upload cancelled"));
+    xhr.send(blob);
+  });
+}
+
+/**
+ * Upload a recording and hand it to the notetaker.
+ *
+ * Three steps, because a gigabyte can't be one request: reserve a row and a
+ * URL, send the bytes to the bucket, then tell the server to look. The server
+ * verifies the object itself — this function saying "done" is not what makes
+ * it true.
+ */
+export async function uploadRecording(
+  file: File,
+  options: {
+    title?: string;
+    calendarEventId?: string | null;
+    onProgress?: (fraction: number) => void;
+  } = {},
+): Promise<MeetingRead> {
+  const target = await startUpload({
+    filename: file.name || null,
+    // Browsers leave `type` empty for extensions they don't recognize. Sending
+    // "" would be rejected as not-audio-or-video, so fall back to something
+    // the server accepts and let ffprobe determine what it actually is.
+    content_type: file.type || "video/mp4",
+    size_bytes: file.size,
+    title: options.title?.trim() || null,
+    calendar_event_id: options.calendarEventId || null,
+  });
+
+  await putToBucket(target, file, options.onProgress);
+  return completeUpload(target.meeting.id);
+}
+
+/** Finish a browser recording: send the audio, then have the server confirm it. */
+export async function finishLiveRecording(
+  target: UploadTarget,
+  audio: Blob,
+  onProgress?: (fraction: number) => void,
+): Promise<MeetingRead> {
+  await putToBucket(target, audio, onProgress);
+  return completeUpload(target.meeting.id);
+}
+
 /* ------------------------------------------------------------------ status */
 
 export type StatusTone = "neutral" | "live" | "done" | "error" | "muted";
@@ -122,11 +243,21 @@ export const CANCELLABLE = new Set(["pending", "scheduled", "joining", "recordin
 export const isInFlight = (m: MeetingRead) => IN_FLIGHT.has(m.status);
 export const isCancellable = (m: MeetingRead) => CANCELLABLE.has(m.status);
 
+/** Sources whose media we captured ourselves rather than sending a bot for.
+ *  Mirrors `models/meetings.SELF_HOSTED_SOURCES`. */
+const SELF_HOSTED = new Set(["upload", "live"]);
+export const isSelfHosted = (m: MeetingRead) => SELF_HOSTED.has(m.source);
+
 /** Meetings the bot hasn't sat in on yet. Everything else — live, processing,
  *  written up, failed — belongs under "Recorded", because the user's question
- *  there is "what happened?" rather than "what's coming?". */
+ *  there is "what happened?" rather than "what's coming?".
+ *
+ *  An upload is never upcoming, whatever its status. It sits at `pending` for
+ *  the seconds between reserving the row and the bytes landing, and filing it
+ *  under "Upcoming" would put a meeting that already happened in the list of
+ *  ones that haven't — where the user would then wait for it. */
 const UPCOMING = new Set(["pending", "scheduled"]);
-export const isUpcoming = (m: MeetingRead) => UPCOMING.has(m.status);
+export const isUpcoming = (m: MeetingRead) => UPCOMING.has(m.status) && !isSelfHosted(m);
 
 /* ------------------------------------------------------------------ format */
 

@@ -105,6 +105,9 @@ export default function MeetingDetailPage() {
   }
 
   const title = meeting ? meetingTitle(meeting) : "Meeting";
+  // Captured out of state so the menu callback below closes over a plain
+  // string rather than re-reading a field TypeScript can't prove is still set.
+  const joinUrl = meeting?.meeting_url ?? null;
 
   return (
     <div className="flex h-full flex-col">
@@ -141,12 +144,14 @@ export default function MeetingDetailPage() {
           >
             {(close) => (
               <>
-                {meeting?.meeting_url ? (
+                {/* Uploads and browser recordings have no link to open — the
+                    meeting never had a URL to join. */}
+                {joinUrl ? (
                   <MenuItem
                     icon={<ExternalLinkIcon className="h-4 w-4" />}
                     onSelect={() => {
                       close();
-                      window.open(meeting.meeting_url, "_blank", "noopener,noreferrer");
+                      window.open(joinUrl, "_blank", "noopener,noreferrer");
                     }}
                   >
                     Open meeting link
