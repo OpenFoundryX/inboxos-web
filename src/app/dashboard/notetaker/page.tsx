@@ -13,6 +13,8 @@ import RecordMeetingMenu from "@/components/notetaker/RecordMeetingMenu";
 import InviteToMeetingModal from "@/components/notetaker/InviteToMeetingModal";
 import UploadRecordingModal from "@/components/notetaker/UploadRecordingModal";
 import LiveRecorder from "@/components/notetaker/LiveRecorder";
+import RenameMeetingModal from "@/components/notetaker/RenameMeetingModal";
+import DeleteMeetingDialog from "@/components/notetaker/DeleteMeetingDialog";
 import { SearchIcon, SettingsIcon } from "@/components/app/icons";
 import { backendConfigured } from "@/lib/session";
 import {
@@ -63,6 +65,9 @@ export default function NotetakerPage() {
   // where a failure would lose the recording.
   const [liveTarget, setLiveTarget] = useState<UploadTarget | null>(null);
   const [startingLive, setStartingLive] = useState(false);
+  // The meeting each dialog is acting on, or null when it's closed.
+  const [renaming, setRenaming] = useState<MeetingRead | null>(null);
+  const [deleting, setDeleting] = useState<MeetingRead | null>(null);
 
   const notify = useCallback((text: string, variant: ToastVariant = "success") => {
     // Date.now() as the id so the same message twice replays the animation.
@@ -375,6 +380,9 @@ export default function NotetakerPage() {
                 loading={loading}
                 cancellingId={cancellingId}
                 onCancel={cancelBot}
+                onRename={setRenaming}
+                onDelete={setDeleting}
+                lockedId={liveTarget?.meeting.id ?? null}
                 order={onUpcoming ? "soonest" : "newest"}
                 emptyMessage={
                   query.trim()
@@ -413,6 +421,24 @@ export default function NotetakerPage() {
           />
         </div>
       ) : null}
+
+      <RenameMeetingModal
+        meeting={renaming}
+        onClose={() => setRenaming(null)}
+        onRenamed={(updated) => {
+          setMeetings((list) => list.map((m) => (m.id === updated.id ? updated : m)));
+          notify("Meeting renamed");
+        }}
+      />
+
+      <DeleteMeetingDialog
+        meeting={deleting}
+        onClose={() => setDeleting(null)}
+        onDeleted={(removed) => {
+          setMeetings((list) => list.filter((m) => m.id !== removed.id));
+          notify("Meeting deleted");
+        }}
+      />
 
       <InviteToMeetingModal
         open={showInvite}

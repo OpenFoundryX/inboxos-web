@@ -78,6 +78,19 @@ export const updateNotetakerSettings = (body: NotetakerSettingsUpdate) =>
 export const cancelMeetingBot = (id: string) =>
   apiFetch<MeetingRead>(`/meetings/${id}/bot`, { method: "DELETE" });
 
+/** Rename. An empty string clears the title — the list then names the meeting
+ *  by its date, which is what an untitled meeting looked like all along. */
+export const renameMeeting = (id: string, title: string) =>
+  apiFetch<MeetingRead>(`/meetings/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ title }),
+  });
+
+/** Delete the meeting, its recording, and any bot still attending it.
+ *  Irreversible — always confirm before calling. Returns nothing (204). */
+export const deleteMeeting = (id: string) =>
+  apiFetch<void>(`/meetings/${id}`, { method: "DELETE" });
+
 export const joinMeeting = (meetingUrl: string, title?: string) =>
   apiFetch<MeetingRead>("/meetings/join", {
     method: "POST",

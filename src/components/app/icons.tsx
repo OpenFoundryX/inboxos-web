@@ -206,6 +206,14 @@ export function TrashIcon(p: IconProps) {
   );
 }
 
+export function PencilIcon(p: IconProps) {
+  return (
+    <Base {...p}>
+      <path d="M4 20h4l10-10a2.83 2.83 0 10-4-4L4 16v4zM13.5 6.5l4 4" />
+    </Base>
+  );
+}
+
 export function SendIcon(p: IconProps) {
   return (
     <Base {...p}>
