@@ -13,12 +13,14 @@ import {
   CalendarIcon,
   ChatIcon,
   MailmanIcon,
+  PencilIcon,
   SettingsIcon,
   BellIcon,
 } from "./icons";
 
 const NAV = [
   { href: "/dashboard", label: "Dashboard", Icon: DashboardIcon },
+  { href: "/dashboard/daily", label: "Daily", Icon: PencilIcon },
   { href: "/dashboard/categorization", label: "Categorization", Icon: TagIcon },
   { href: "/dashboard/mailman", label: "Mailman", Icon: MailmanIcon },
   { href: "/dashboard/drafts", label: "Drafts", Icon: DraftsIcon },
