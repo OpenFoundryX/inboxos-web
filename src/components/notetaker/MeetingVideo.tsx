@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import RecordingPlayer from "@/components/notetaker/RecordingPlayer";
-import { ChevronUpIcon, PlayIcon } from "@/components/app/icons";
+import { usePosterFrame } from "@/components/notetaker/usePosterFrame";
+import { ChevronUpIcon, MicIcon, PlayIcon } from "@/components/app/icons";
 
 /**
  * The recording at the top of a meeting.
@@ -12,9 +13,10 @@ import { ChevronUpIcon, PlayIcon } from "@/components/app/icons";
  * notes wants it out of the way. Collapsing keeps the video one click away
  * without making everyone scroll past it.
  *
- * The thumbnail is the same file with `preload="metadata"` — the browser
- * paints its first frame, so it costs a header request rather than a poster
- * image the provider doesn't give us.
+ * The thumbnail is the same file with `preload="metadata"`, seeked a little way
+ * in — see `usePosterFrame`. That costs a range request rather than a poster
+ * image nobody gives us, and avoids the opening frame of a call, which is
+ * reliably black.
  */
 export default function MeetingVideo({
   src,
@@ -32,6 +34,8 @@ export default function MeetingVideo({
   meta: React.ReactNode;
 }) {
   const [expanded, setExpanded] = useState(true);
+  const thumbnail = useRef<HTMLVideoElement>(null);
+  const poster = usePosterFrame(thumbnail);
 
   if (loading) {
     return (
@@ -66,9 +70,29 @@ export default function MeetingVideo({
           type="button"
           onClick={() => setExpanded(true)}
           aria-label="Expand the recording"
-          className="group relative h-[3.75rem] w-[6.5rem] shrink-0 overflow-hidden rounded-xl bg-black"
+          className={`group relative h-[3.75rem] w-[6.5rem] shrink-0 overflow-hidden rounded-xl ${
+            poster.hasVideo === false ? "bg-ink/5" : "bg-black"
+          }`}
         >
-          <video src={src} preload="metadata" muted className="h-full w-full object-cover" />
+          {/* Kept mounted even for audio-only files: it is what reports back
+              that there is no picture. Hidden rather than unmounted so that
+              answer doesn't get thrown away and re-asked on every render. */}
+          <video
+            ref={thumbnail}
+            src={src}
+            preload="metadata"
+            muted
+            playsInline
+            onLoadedMetadata={poster.onLoadedMetadata}
+            className={`h-full w-full object-cover ${poster.hasVideo === false ? "hidden" : ""}`}
+          />
+          {poster.hasVideo === false ? (
+            // An audio recording has no frame to show, and a black rectangle
+            // reads as a video that failed rather than as sound.
+            <span className="absolute inset-0 flex items-center justify-center text-ink/40">
+              <MicIcon className="h-5 w-5" />
+            </span>
+          ) : null}
           <span className="absolute inset-0 flex items-center justify-center bg-black/20 text-white/80 opacity-0 transition-opacity group-hover:opacity-100">
             <PlayIcon className="h-6 w-6" />
           </span>
