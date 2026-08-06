@@ -109,7 +109,7 @@ export default function DayNote({ dateKey, initialBody, onSaved, onError }: Prop
   const today = isToday(dateKey);
 
   return (
-    <section className="px-2 py-6" data-date={dateKey}>
+    <section className="py-6" data-date={dateKey}>
       <h2
         className={`flex items-center gap-2 text-2xl font-bold tracking-tight ${
           today ? "text-ink" : "text-ink/40"
@@ -122,6 +122,12 @@ export default function DayNote({ dateKey, initialBody, onSaved, onError }: Prop
         {saving ? <span className="text-xs font-medium text-ink/30">Saving…</span> : null}
       </h2>
 
+      {/* The tall minimum is what separates one day from the next, and it is on
+          the textarea rather than the section so the whole gap is clickable —
+          the empty space below a heading is where you aim to start writing.
+          `resize()` sets an inline height, but CSS min-height still wins when
+          that height is smaller, so a long day grows past this and a short one
+          never shrinks below it. */}
       <textarea
         ref={textarea}
         value={body}
@@ -129,7 +135,7 @@ export default function DayNote({ dateKey, initialBody, onSaved, onError }: Prop
         onBlur={blur}
         placeholder="Write notes…"
         rows={1}
-        className="mt-3 w-full resize-none overflow-hidden bg-transparent text-sm leading-relaxed text-ink placeholder:text-ink/30 focus:outline-none"
+        className="mt-3 min-h-[58vh] w-full resize-none overflow-hidden bg-transparent text-sm leading-relaxed text-ink placeholder:text-ink/30 focus:outline-none"
       />
     </section>
   );

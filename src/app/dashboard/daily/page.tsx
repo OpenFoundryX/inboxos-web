@@ -147,8 +147,11 @@ export default function DailyPage() {
         <h1 className="text-base font-bold text-ink">Scratchpad</h1>
       </header>
 
+      {/* Left-aligned rather than a centred column: the heading is the anchor
+          you scan for when scrolling through days, and centring puts it in a
+          different place on every viewport width. */}
       <div ref={scroller} className="min-h-0 flex-1 overflow-y-auto px-6">
-        <div className="mx-auto max-w-3xl">
+        <div>
           {!configured ? (
             <Card className="mt-4 p-4 text-sm text-ink/60">
               Not connected to the InboxOS backend. Set{" "}
@@ -170,9 +173,9 @@ export default function DailyPage() {
           ))}
 
           <div ref={bottomSentinel} className="h-px" />
-          {/* Room to scroll the last day up to a comfortable writing position
-              rather than leaving it pinned to the bottom edge. */}
-          <div className="h-[40vh]" />
+          {/* Each day is already most of a screen tall, so this only needs to
+              keep the last one off the bottom edge. */}
+          <div className="h-24" />
         </div>
       </div>
 
