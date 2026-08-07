@@ -35,7 +35,12 @@ export type Conversation = {
 
 export type ConversationDetail = Conversation & { messages: ChatMessage[] };
 
+/** One slash command, as served by GET /chat/commands. */
+export type SlashCommandInfo = { name: string; summary: string; usage: string };
+
 export const listConversations = () => apiFetch<Conversation[]>("/chat/conversations");
+
+export const listCommands = () => apiFetch<SlashCommandInfo[]>("/chat/commands");
 
 export const getConversation = (id: string) =>
   apiFetch<ConversationDetail>(`/chat/conversations/${id}`);

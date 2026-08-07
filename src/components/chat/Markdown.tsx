@@ -1,6 +1,10 @@
 /**
  * A deliberately small markdown renderer for exactly what the assistant emits:
- * **bold**, `- ` bullets, [label](url), and blank-line paragraphs.
+ * **bold**, `code`, `- ` bullets, [label](url), and blank-line paragraphs.
+ *
+ * A code span naming a slash command renders as a button that prefills the
+ * input — which is how the nudge under a prose command becomes actionable
+ * without a new event, a new column, or a change to the SSE protocol.
  *
  * It builds React nodes rather than HTML strings — model output can never
  * inject markup, and there is no `dangerouslySetInnerHTML` anywhere. Link
@@ -12,8 +16,12 @@
  */
 
 import EmailRefList, { tidyMeta, type EmailRef } from "./EmailRefList";
+import { usePrefill } from "./PrefillContext";
 
-const INLINE = /(\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\))/g;
+const INLINE = /(\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\)|`[^`]+`)/g;
+
+/** A code span that is exactly a command name, e.g. `/rule` or `/rule do a thing`. */
+const COMMAND_SPAN = /^\/([a-z-]+)(?:\s|$)/i;
 
 // Known limitation: a link nested inside bold (**see [this](url)**) is consumed by the bold match and not parsed as an anchor.
 
@@ -35,6 +43,32 @@ export function safeExternalHref(url: string): string | null {
   }
 }
 
+function CodeSpan({ text }: { text: string }) {
+  const { commands, onPrefill } = usePrefill();
+  const name = COMMAND_SPAN.exec(text)?.[1]?.toLowerCase();
+  const known = name ? commands.some((c) => c.name === name) : false;
+
+  // Checking against the fetched list is what keeps a path like `/etc/hosts`
+  // from rendering as a command chip.
+  if (!known || !onPrefill) {
+    return (
+      <code className="rounded bg-ink/5 px-1.5 py-0.5 font-mono text-[0.85em] text-ink">
+        {text}
+      </code>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => onPrefill(text)}
+      className="rounded-md bg-accent/10 px-1.5 py-0.5 font-mono text-[0.85em] font-medium text-accent hover:bg-accent/20"
+    >
+      {text}
+    </button>
+  );
+}
+
 function inline(text: string, keyPrefix: string) {
   return text.split(INLINE).map((part, i) => {
     const key = `${keyPrefix}-${i}`;
@@ -44,6 +78,9 @@ function inline(text: string, keyPrefix: string) {
           {part.slice(2, -2)}
         </strong>
       );
+    }
+    if (part.startsWith("`") && part.endsWith("`") && part.length > 2) {
+      return <CodeSpan key={key} text={part.slice(1, -1)} />;
     }
     const link = /^\[([^\]]+)\]\(([^)]+)\)$/.exec(part);
     if (link) {

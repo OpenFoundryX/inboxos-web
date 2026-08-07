@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import StatusPill from "@/components/notetaker/StatusPill";
-import { UsersIcon, VideoIcon } from "@/components/app/icons";
+import Menu, { MenuItem } from "@/components/ui/Menu";
+import { EllipsisIcon, PencilIcon, TrashIcon, UsersIcon, VideoIcon } from "@/components/app/icons";
 import {
   formatTimeRange,
   isCancellable,
@@ -15,10 +16,18 @@ export default function MeetingListRow({
   meeting,
   busy,
   onCancel,
+  onRename,
+  onDelete,
+  /** True for the meeting this tab is recording into. Deleting it would strand
+   *  the recorder's upload target and lose the audio. */
+  locked = false,
 }: {
   meeting: MeetingRead;
   busy: boolean;
   onCancel: (meeting: MeetingRead) => void;
+  onRename: (meeting: MeetingRead) => void;
+  onDelete: (meeting: MeetingRead) => void;
+  locked?: boolean;
 }) {
   // Once a meeting is simply done, its status pill says nothing the row
   // doesn't. It's kept for the states that are still going somewhere.
@@ -72,6 +81,44 @@ export default function MeetingListRow({
             {busy ? "Cancelling…" : "Cancel bot"}
           </button>
         ) : null}
+
+        {/* Sits above the stretched link's ::after overlay, or the row's own
+            navigation would swallow every click aimed at the menu. */}
+        <div className="relative z-10">
+          <Menu
+            label="Meeting actions"
+            trigger={() => (
+              <span className="block rounded-lg p-1.5 text-ink/40 transition-colors hover:bg-ink/5 hover:text-ink">
+                <EllipsisIcon className="h-4 w-4" />
+              </span>
+            )}
+            panelClassName="w-44"
+          >
+            {(close) => (
+              <>
+                <MenuItem
+                  icon={<PencilIcon className="h-4 w-4" />}
+                  onSelect={() => {
+                    close();
+                    onRename(meeting);
+                  }}
+                >
+                  Rename
+                </MenuItem>
+                <MenuItem
+                  icon={<TrashIcon className="h-4 w-4" />}
+                  disabled={locked}
+                  onSelect={() => {
+                    close();
+                    onDelete(meeting);
+                  }}
+                >
+                  Delete
+                </MenuItem>
+              </>
+            )}
+          </Menu>
+        </div>
       </div>
     </div>
   );

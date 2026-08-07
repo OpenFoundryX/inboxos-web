@@ -1,19 +1,28 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import Menu, { MenuItem, MenuNote } from "@/components/ui/Menu";
+import Menu, { MenuItem } from "@/components/ui/Menu";
 import { CalendarIcon, ChevronDownIcon, MicIcon, UploadIcon } from "@/components/app/icons";
 
-/**
- * Ways to get a call recorded.
- *
- * Only one of them exists today: the bot joins meetings it finds on your
- * calendar, which is switched on per meeting from the dashboard. Ad-hoc
- * recording and uploads both need endpoints the API doesn't have, so they're
- * shown disabled with the reason rather than left out — the gap is the useful
- * information here.
- */
-export default function RecordMeetingMenu() {
+type Props = {
+  /** Begin a browser recording. Async because it reserves a row and an upload
+   *  URL before the microphone is ever touched. */
+  onRecordNow: () => void;
+  onInvite: () => void;
+  onUpload: () => void;
+  /** True while a recording is already in progress — starting a second one
+   *  would silently take over the microphone from the first. */
+  recording?: boolean;
+};
+
+/** Ways to get a call recorded: send a bot to it, record it here, or hand over
+ *  a file of one that already happened. */
+export default function RecordMeetingMenu({
+  onRecordNow,
+  onInvite,
+  onUpload,
+  recording = false,
+}: Props) {
   const router = useRouter();
 
   return (
@@ -29,6 +38,34 @@ export default function RecordMeetingMenu() {
       {(close) => (
         <>
           <MenuItem
+            icon={<MicIcon className="h-4 w-4" />}
+            disabled={recording}
+            onSelect={() => {
+              close();
+              onRecordNow();
+            }}
+          >
+            Start recording now
+          </MenuItem>
+          <MenuItem
+            icon={<CalendarIcon className="h-4 w-4" />}
+            onSelect={() => {
+              close();
+              onInvite();
+            }}
+          >
+            Invite to meeting
+          </MenuItem>
+          <MenuItem
+            icon={<UploadIcon className="h-4 w-4" />}
+            onSelect={() => {
+              close();
+              onUpload();
+            }}
+          >
+            Upload a recording
+          </MenuItem>
+          <MenuItem
             icon={<CalendarIcon className="h-4 w-4" />}
             onSelect={() => {
               close();
@@ -37,16 +74,6 @@ export default function RecordMeetingMenu() {
           >
             Record an upcoming meeting
           </MenuItem>
-          <MenuItem icon={<MicIcon className="h-4 w-4" />} disabled>
-            Start recording now
-          </MenuItem>
-          <MenuItem icon={<UploadIcon className="h-4 w-4" />} disabled>
-            Upload a recording
-          </MenuItem>
-          <MenuNote>
-            The notetaker joins calls from your calendar. Ad-hoc recording and uploads aren&apos;t
-            available yet.
-          </MenuNote>
         </>
       )}
     </Menu>

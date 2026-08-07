@@ -8,6 +8,11 @@ export default function MeetingList({
   loading,
   cancellingId,
   onCancel,
+  onRename,
+  onDelete,
+  /** The meeting this tab is recording into, if any. It can't be deleted while
+   *  the recorder still holds an upload target for it. */
+  lockedId,
   /** Recorded meetings read newest-first; upcoming ones soonest-first. */
   order,
   emptyMessage,
@@ -16,6 +21,9 @@ export default function MeetingList({
   loading: boolean;
   cancellingId: string | null;
   onCancel: (meeting: MeetingRead) => void;
+  onRename: (meeting: MeetingRead) => void;
+  onDelete: (meeting: MeetingRead) => void;
+  lockedId?: string | null;
   order: "newest" | "soonest";
   emptyMessage: string;
 }) {
@@ -53,6 +61,9 @@ export default function MeetingList({
                 meeting={meeting}
                 busy={cancellingId === meeting.id}
                 onCancel={onCancel}
+                onRename={onRename}
+                onDelete={onDelete}
+                locked={lockedId === meeting.id}
               />
             ))}
           </div>

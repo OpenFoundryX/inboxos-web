@@ -2,18 +2,21 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Card from "@/components/ui/Card";
 import Menu, { MenuItem } from "@/components/ui/Menu";
 import Toast, { type ToastMessage, type ToastVariant } from "@/components/ui/Toast";
 import MeetingDetail from "@/components/notetaker/MeetingDetail";
 import MeetingVideo from "@/components/notetaker/MeetingVideo";
 import InsightsPanel from "@/components/notetaker/InsightsPanel";
+import RenameMeetingModal from "@/components/notetaker/RenameMeetingModal";
+import DeleteMeetingDialog from "@/components/notetaker/DeleteMeetingDialog";
 import {
   ArrowLeftIcon,
   CheckIcon,
   EllipsisIcon,
   ExternalLinkIcon,
+  PencilIcon,
   ShareIcon,
   TrashIcon,
 } from "@/components/app/icons";
@@ -38,10 +41,13 @@ export default function MeetingDetailPage() {
   const params = useParams<{ id: string }>();
   const id = params?.id;
 
+  const router = useRouter();
   const [meeting, setMeeting] = useState<Meeting | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [shared, setShared] = useState(false);
   const [toast, setToast] = useState<ToastMessage | null>(null);
+  const [renaming, setRenaming] = useState<Meeting | null>(null);
+  const [deleting, setDeleting] = useState<Meeting | null>(null);
 
   const notify = useCallback((text: string, variant: ToastVariant = "success") => {
     setToast({ id: Date.now(), text, variant });
@@ -105,6 +111,9 @@ export default function MeetingDetailPage() {
   }
 
   const title = meeting ? meetingTitle(meeting) : "Meeting";
+  // Captured out of state so the menu callback below closes over a plain
+  // string rather than re-reading a field TypeScript can't prove is still set.
+  const joinUrl = meeting?.meeting_url ?? null;
 
   return (
     <div className="flex h-full flex-col">
@@ -141,12 +150,14 @@ export default function MeetingDetailPage() {
           >
             {(close) => (
               <>
-                {meeting?.meeting_url ? (
+                {/* Uploads and browser recordings have no link to open — the
+                    meeting never had a URL to join. */}
+                {joinUrl ? (
                   <MenuItem
                     icon={<ExternalLinkIcon className="h-4 w-4" />}
                     onSelect={() => {
                       close();
-                      window.open(meeting.meeting_url, "_blank", "noopener,noreferrer");
+                      window.open(joinUrl, "_blank", "noopener,noreferrer");
                     }}
                   >
                     Open meeting link
@@ -164,8 +175,28 @@ export default function MeetingDetailPage() {
                     Cancel notetaker
                   </MenuItem>
                 ) : null}
-                {!meeting?.meeting_url && !(meeting && isCancellable(meeting)) ? (
-                  <p className="px-3.5 py-2 text-xs text-ink/40">Nothing to do here yet.</p>
+                {meeting ? (
+                  <MenuItem
+                    icon={<PencilIcon className="h-4 w-4" />}
+                    onSelect={() => {
+                      close();
+                      setRenaming(meeting);
+                    }}
+                  >
+                    Rename
+                  </MenuItem>
+                ) : null}
+                {meeting ? (
+                  <MenuItem
+                    icon={<TrashIcon className="h-4 w-4" />}
+                    destructive
+                    onSelect={() => {
+                      close();
+                      setDeleting(meeting);
+                    }}
+                  >
+                    Delete meeting
+                  </MenuItem>
                 ) : null}
               </>
             )}
@@ -225,6 +256,27 @@ export default function MeetingDetailPage() {
           />
         </div>
       </div>
+
+      <RenameMeetingModal
+        meeting={renaming}
+        onClose={() => setRenaming(null)}
+        onRenamed={(updated) => {
+          // The list endpoint's shape is a subset of this page's, so merge
+          // rather than replace — assigning it would drop the transcript and
+          // the resolved video URL this page already loaded.
+          setMeeting((m) => (m ? { ...m, ...updated } : m));
+          notify("Meeting renamed");
+        }}
+      />
+
+      <DeleteMeetingDialog
+        meeting={deleting}
+        onClose={() => setDeleting(null)}
+        // The page this is rendered on no longer exists, so go back to the
+        // list. `replace` rather than `push`: Back should not return to a
+        // detail view that now 404s.
+        onDeleted={() => router.replace("/dashboard/notetaker")}
+      />
 
       <Toast toast={toast} onDismiss={() => setToast(null)} />
     </div>

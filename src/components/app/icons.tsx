@@ -206,6 +206,14 @@ export function TrashIcon(p: IconProps) {
   );
 }
 
+export function PencilIcon(p: IconProps) {
+  return (
+    <Base {...p}>
+      <path d="M4 20h4l10-10a2.83 2.83 0 10-4-4L4 16v4zM13.5 6.5l4 4" />
+    </Base>
+  );
+}
+
 export function SendIcon(p: IconProps) {
   return (
     <Base {...p}>
@@ -315,6 +323,24 @@ export function VideoIcon(p: IconProps) {
     <Base {...p}>
       <rect x="2" y="6" width="13" height="12" rx="2" />
       <path d="m15 11 6-4v10l-6-4z" />
+    </Base>
+  );
+}
+
+export function WarnIcon(p: IconProps) {
+  return (
+    <Base {...p}>
+      <path d="M12 4 2.5 20h19L12 4Z" />
+      <path d="M12 10v4" />
+      <path d="M12 17.5v.01" />
+    </Base>
+  );
+}
+
+export function XIcon(p: IconProps) {
+  return (
+    <Base {...p}>
+      <path d="M6 6l12 12M18 6 6 18" />
     </Base>
   );
 }

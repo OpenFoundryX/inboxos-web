@@ -4,15 +4,18 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import AskBar from "@/components/app/AskBar";
 import ConversationList from "@/components/chat/ConversationList";
 import MessageList from "@/components/chat/MessageList";
+import { PrefillProvider } from "@/components/chat/PrefillContext";
 import { backendConfigured } from "@/lib/session";
 import {
   getConversation,
+  listCommands,
   listConversations,
   streamAsk,
   type ActionStatus,
   type ChatMessage,
   type ChatSource,
   type Conversation,
+  type SlashCommandInfo,
 } from "@/lib/chat";
 
 const NOT_CONFIGURED =
@@ -24,6 +27,8 @@ export default function ChatPage() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [draft, setDraft] = useState("");
+  const [commands, setCommands] = useState<SlashCommandInfo[]>([]);
 
   const [streaming, setStreaming] = useState(false);
   const [stage, setStage] = useState<string | null>(null);
@@ -47,6 +52,19 @@ export default function ChatPage() {
     void refreshConversations();
   }, [configured, refreshConversations]);
 
+  // Fetched once: the surface only changes when the server ships a new one.
+  useEffect(() => {
+    if (!configured) return;
+    void (async () => {
+      try {
+        setCommands(await listCommands());
+      } catch {
+        // No menu is a degraded input, not a broken one — typed commands
+        // still work, so this is not worth an error banner.
+      }
+    })();
+  }, [configured]);
+
   // Cancel any in-flight answer when the page unmounts.
   useEffect(() => () => abortRef.current?.abort(), []);
 
@@ -57,6 +75,7 @@ export default function ChatPage() {
     setStreamedSources([]);
     setStage(null);
     setError(null);
+    setDraft("");
     setActiveId(id);
     try {
       const detail = await getConversation(id);
@@ -75,6 +94,7 @@ export default function ChatPage() {
     setStreamedSources([]);
     setStage(null);
     setError(null);
+    setDraft("");
     setStreaming(false);
   }
 
@@ -99,6 +119,7 @@ export default function ChatPage() {
       }
 
       lastQuestion.current = text;
+      setDraft("");
       setError(null);
       setStreaming(true);
       setStage(null);
@@ -220,59 +241,70 @@ export default function ChatPage() {
   const empty = messages.length === 0 && !streaming;
 
   return (
-    <div className="flex h-screen">
-      <ConversationList
-        conversations={conversations}
-        activeId={activeId}
-        onSelect={(id) => void openConversation(id)}
-        onNew={startNew}
-        onDeleted={handleDeleted}
-      />
+    <PrefillProvider commands={commands} onPrefill={setDraft}>
+      <div className="flex h-screen">
+        <ConversationList
+          conversations={conversations}
+          activeId={activeId}
+          onSelect={(id) => void openConversation(id)}
+          onNew={startNew}
+          onDeleted={handleDeleted}
+        />
 
-      <main className="flex flex-1 flex-col overflow-hidden">
-        {empty ? (
-          <div className="flex flex-1 flex-col items-center justify-center p-8">
-            <span className="mb-8 text-3xl font-semibold tracking-tight text-accent">
-              InboxOS
-            </span>
-            <div className="w-full max-w-2xl">
-              <AskBar
-                onSubmit={(t) => void ask(t)}
-                disabled={streaming}
-                busy={streaming}
-                placeholder="Ask me anything about your emails…"
-              />
-              {error ? <p className="mt-4 text-center text-sm text-accent">{error}</p> : null}
-            </div>
-          </div>
-        ) : (
-          <>
-            <div className="flex-1 overflow-y-auto">
-              <MessageList
-                messages={messages}
-                streaming={streaming}
-                stage={stage}
-                streamedText={streamedText}
-                streamedSources={streamedSources}
-                error={error}
-                onRetry={() => void ask(lastQuestion.current)}
-                onActionsResolved={resolveActions}
-              />
-            </div>
-            <div className="border-t border-black/5 bg-canvas px-4 py-4">
-              <div className="mx-auto w-full max-w-3xl">
+        <main className="flex flex-1 flex-col overflow-hidden">
+          {empty ? (
+            <div className="flex flex-1 flex-col items-center justify-center p-8">
+              <span className="mb-8 text-3xl font-semibold tracking-tight text-accent">
+                InboxOS
+              </span>
+              <div className="w-full max-w-2xl">
                 <AskBar
                   onSubmit={(t) => void ask(t)}
                   disabled={streaming}
                   busy={streaming}
-                  showChips={false}
-                  placeholder="Ask a follow-up…"
+                  placeholder="Ask me anything about your emails…"
+                  commands={commands}
+                  value={draft}
+                  onValueChange={setDraft}
                 />
+                <p className="mt-3 text-center text-xs text-ink/40">
+                  Type <span className="font-mono text-ink/60">/</span> for commands
+                </p>
+                {error ? <p className="mt-4 text-center text-sm text-accent">{error}</p> : null}
               </div>
             </div>
-          </>
-        )}
-      </main>
-    </div>
+          ) : (
+            <>
+              <div className="flex-1 overflow-y-auto">
+                <MessageList
+                  messages={messages}
+                  streaming={streaming}
+                  stage={stage}
+                  streamedText={streamedText}
+                  streamedSources={streamedSources}
+                  error={error}
+                  onRetry={() => void ask(lastQuestion.current)}
+                  onActionsResolved={resolveActions}
+                />
+              </div>
+              <div className="border-t border-black/5 bg-canvas px-4 py-4">
+                <div className="mx-auto w-full max-w-3xl">
+                  <AskBar
+                    onSubmit={(t) => void ask(t)}
+                    disabled={streaming}
+                    busy={streaming}
+                    showChips={false}
+                    placeholder="Ask a follow-up, or / for commands…"
+                    commands={commands}
+                    value={draft}
+                    onValueChange={setDraft}
+                  />
+                </div>
+              </div>
+            </>
+          )}
+        </main>
+      </div>
+    </PrefillProvider>
   );
 }

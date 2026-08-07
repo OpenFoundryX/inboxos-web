@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { usePosterFrame } from "@/components/notetaker/usePosterFrame";
 import { ExternalLinkIcon } from "@/components/app/icons";
 
 /** Plays the meeting recording from the provider's signed link.
@@ -29,6 +30,9 @@ export default function RecordingPlayer({
   const wasPlaying = useRef(false);
   const refreshing = useRef(false);
   const [failed, setFailed] = useState(false);
+  // Fills the frame before anyone presses play, and rewinds to the start when
+  // they do — the seek is there to show a picture, not to skip the opening.
+  const poster = usePosterFrame(videoRef, { resetOnPlay: true });
 
   // A changed `src` means a refreshed link arrived. Restoring position here —
   // rather than at the point we asked — is what makes the swap invisible.
@@ -80,6 +84,15 @@ export default function RecordingPlayer({
         // Enough to render the scrubber and duration without pulling the whole
         // file down for someone who only came for the summary.
         preload="metadata"
+        playsInline
+        onLoadedMetadata={() => {
+          // A refreshed link arrives mid-playback, and the effect above owns
+          // the playhead in that case. Parking it on a poster frame there
+          // would undo the resume the user isn't supposed to notice.
+          if (resumeAt.current > 0) return;
+          poster.onLoadedMetadata();
+        }}
+        onPlay={poster.onPlay}
         onTimeUpdate={(e) => {
           const t = e.currentTarget.currentTime;
           if (t > 0) resumeAt.current = t;
@@ -88,7 +101,13 @@ export default function RecordingPlayer({
           refreshing.current = false;
         }}
         onError={handleError}
-        className="w-full rounded-xl bg-black"
+        // An audio-only recording has no picture, so the black panel would be
+        // an empty void above the controls rather than a video.
+        className={
+          poster.hasVideo === false
+            ? "h-12 w-full"
+            : "w-full rounded-xl bg-black"
+        }
       />
       {/* For anyone who wants the file itself — full screen, a download, or
           their own player. */}

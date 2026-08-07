@@ -162,3 +162,59 @@ body {
     animation: none;
   }
 }
+
+/* Daily notes editor.
+   Tailwind's preflight strips heading sizes and list markers, so a rich-text
+   surface has to put them back explicitly — otherwise every block type in the
+   slash menu renders identically and the menu looks broken. */
+.note-editor h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 1.25rem 0 0.5rem;
+}
+.note-editor h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 1.1rem 0 0.4rem;
+}
+.note-editor h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 1rem 0 0.35rem;
+}
+.note-editor h1:first-child,
+.note-editor h2:first-child,
+.note-editor h3:first-child {
+  margin-top: 0;
+}
+.note-editor p {
+  margin: 0.35rem 0;
+}
+.note-editor ul,
+.note-editor ol {
+  margin: 0.4rem 0;
+  padding-left: 1.5rem;
+}
+.note-editor ul {
+  list-style: disc;
+}
+.note-editor ol {
+  list-style: decimal;
+}
+.note-editor li {
+  margin: 0.15rem 0;
+}
+.note-editor li p {
+  margin: 0;
+}
+
+/* The placeholder only belongs on a wholly empty note. Tiptap also marks every
+   empty node, which would print "Write notes…" on each blank line as you type. */
+.note-editor p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+  color: rgb(0 0 0 / 0.3);
+}
