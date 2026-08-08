@@ -11,7 +11,7 @@ const sourceSerif = Source_Serif_4({
 export const metadata: Metadata = {
   title: "InboxOS — Inbox, meetings and scheduling in one seat",
   description:
-    "InboxOS sorts and batches your mail, writes up your meetings, and lets Vela handle the scheduling back-and-forth. Gmail today, Outlook next.",
+    "InboxOS sorts and batches your mail, writes up your meetings, and lets its scheduling agent handle the back-and-forth. Gmail today, Outlook next.",
 };
 
 export default function RootLayout({

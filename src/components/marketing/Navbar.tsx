@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Button from "@/components/ui/Button";
 import Wordmark from "@/components/ui/Wordmark";
+import { LEGAL } from "@/lib/legal";
 
 const LINKS = [
   { href: "#how", label: "How it works" },
@@ -23,6 +24,19 @@ export default function Navbar() {
               {l.label}
             </Link>
           ))}
+          {/* Goes to the calendar rather than to #talk. The section sits below
+           *  the last scrollable position on a tall window, so a fragment link
+           *  to it does nothing there — and the bar also renders on /privacy
+           *  and /terms, where no #talk exists at all. A direct link works
+           *  from every page and every viewport. */}
+          <a
+            href={LEGAL.bookingUrl}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="text-sm font-medium text-ink/80 hover:text-ink"
+          >
+            Book a call
+          </a>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" href="/login">

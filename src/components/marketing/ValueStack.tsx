@@ -46,8 +46,8 @@ export default function ValueStack() {
           </h3>
           <p className="mt-5 leading-relaxed text-ink/75">
             Inbox sorting and batched delivery, meeting recaps with action items,
-            and Vela handling the scheduling back-and-forth. One subscription,
-            one place to change your mind.
+            and a scheduling agent handling the back-and-forth. One
+            subscription, one place to change your mind.
           </p>
           <div className="mt-8 flex items-end gap-2">
             <span className="text-5xl font-semibold">${pro.annual}</span>

@@ -81,7 +81,7 @@ export default function PrivacyPage() {
         <p>
           InboxOS never sends an email on your behalf without you approving it,
           with the single exception of scheduling messages you have explicitly
-          delegated to Vela on a given thread.
+          delegated to the scheduling agent on a given thread.
         </p>
       </Section>
 

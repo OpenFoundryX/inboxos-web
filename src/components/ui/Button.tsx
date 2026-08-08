@@ -15,6 +15,10 @@ const variants: Record<Variant, string> = {
 type ButtonProps = {
   variant?: Variant;
   href?: string;
+  /** Leaves the site. Renders a plain anchor opening in a new tab — next/link
+   *  would prefetch a route that isn't ours and keep the visitor from coming
+   *  back to the page they were reading. */
+  external?: boolean;
   className?: string;
   children: ReactNode;
   onClick?: () => void;
@@ -25,6 +29,7 @@ type ButtonProps = {
 export default function Button({
   variant = "primary",
   href,
+  external,
   className = "",
   children,
   onClick,
@@ -34,6 +39,18 @@ export default function Button({
   const cls = `${base} ${variants[variant]} ${
     disabled ? "cursor-not-allowed opacity-50" : ""
   } ${className}`;
+  if (href && external) {
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noreferrer noopener"
+        className={cls}
+      >
+        {children}
+      </a>
+    );
+  }
   if (href) {
     return (
       <Link href={href} className={cls}>

@@ -1,10 +1,11 @@
 import Link from "next/link";
 import Wordmark from "@/components/ui/Wordmark";
+import { LEGAL } from "@/lib/legal";
 
 /** `href: null` means the page doesn't exist yet. Those render as plain text
  *  rather than links — a link that lands somewhere unrelated is worse than no
  *  link, and pointing them all at /login was exactly that. */
-type FooterLink = { label: string; href: string | null };
+type FooterLink = { label: string; href: string | null; external?: boolean };
 
 const COLS: { title: string; links: FooterLink[] }[] = [
   {
@@ -22,12 +23,13 @@ const COLS: { title: string; links: FooterLink[] }[] = [
       { label: "Sorting", href: "/#how" },
       { label: "Drafting", href: "/#how" },
       { label: "Meeting notes", href: "/#how" },
-      { label: "Vela scheduling", href: "/#how" },
+      { label: "Scheduling agent", href: "/#how" },
     ],
   },
   {
     title: "Company",
     links: [
+      { label: "Book a call", href: LEGAL.bookingUrl, external: true },
       { label: "About", href: null },
       { label: "Blog", href: null },
       { label: "Careers", href: null },
@@ -56,7 +58,16 @@ export default function Footer() {
               <ul className="mt-4 space-y-3">
                 {col.links.map((link) => (
                   <li key={link.label}>
-                    {link.href ? (
+                    {link.href && link.external ? (
+                      <a
+                        href={link.href}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className="text-sm text-ink/70 hover:text-ink"
+                      >
+                        {link.label}
+                      </a>
+                    ) : link.href ? (
                       <Link
                         href={link.href}
                         className="text-sm text-ink/70 hover:text-ink"

@@ -22,6 +22,12 @@ export const LEGAL = {
    *  Checkout path (no workspace/org model exists yet to sell against), so
    *  routing them anywhere but a real human contact is dishonest. */
   salesEmail: TODO("sales contact address"),
+  /** Public booking link for the "Talk to a human" section. Deliberately not
+   *  a TODO(): it is a real live URL, so it is the one contact route on the
+   *  site that works today. Not covered by `unresolvedLegalFields`. */
+  bookingUrl: "https://calendly.com/nilesh-pant99/30min",
+  /** Kept next to the URL so the copy and the actual calendar can't drift. */
+  bookingMinutes: 30,
   /** Only needed if you have EU/UK users and appoint one. */
   euRepresentative: TODO("EU/UK representative, or delete this line"),
 } as const;

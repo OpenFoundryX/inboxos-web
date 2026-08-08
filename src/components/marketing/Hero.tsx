@@ -9,7 +9,7 @@ export default function Hero() {
       </h1>
       <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-ink/60">
         InboxOS holds your mail and delivers it sorted, sits in on your calls and
-        writes them up, and lets Vela handle the scheduling back-and-forth.
+        writes them up, and lets its scheduling agent handle the back-and-forth.
       </p>
       <div className="mt-9 flex flex-col items-center gap-4">
         <div className="flex flex-wrap items-center justify-center gap-3">

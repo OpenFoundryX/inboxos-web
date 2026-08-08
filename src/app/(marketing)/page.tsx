@@ -4,6 +4,7 @@ import EmailFlow from "@/components/marketing/EmailFlow";
 import ValueStack from "@/components/marketing/ValueStack";
 import Pricing from "@/components/marketing/Pricing";
 import PlanComparison from "@/components/marketing/PlanComparison";
+import BookCall from "@/components/marketing/BookCall";
 
 export default function LandingPage() {
   return (
@@ -79,12 +80,12 @@ export default function LandingPage() {
         <FeatureRow
           eyebrow="Scheduling"
           eyebrowColor="#4C6B8C"
-          title="Vela does the back-and-forth"
-          body="CC Vela on a thread and it takes over the scheduling — proposing times, negotiating with up to eight people, booking the invite, and rearranging things when something clashes."
+          title="The scheduling agent does the back-and-forth"
+          body="CC the scheduling agent on a thread and it takes over — proposing times, negotiating with up to eight people, booking the invite, and rearranging things when something clashes."
         >
           <div className="w-full max-w-sm rounded-2xl border border-black/10 bg-white p-5 shadow-lg">
             <span className="text-xs font-semibold uppercase tracking-wide text-ink/45">
-              Vela
+              Scheduling agent
             </span>
             <p className="mt-2 text-sm leading-relaxed text-ink/70">
               Tuesday at 2pm works for everyone except Ravi. Proposing 3:30pm
@@ -97,6 +98,7 @@ export default function LandingPage() {
       <ValueStack />
       <Pricing />
       <PlanComparison />
+      <BookCall />
     </>
   );
 }

@@ -41,7 +41,7 @@ export default function TermsPage() {
         </p>
         <p>
           Features described as forthcoming — including Outlook support and parts
-          of Vela scheduling — are not part of what you are buying today, and we
+          of agent scheduling — are not part of what you are buying today, and we
           make no commitment about when they ship.
         </p>
       </Section>
@@ -169,8 +169,8 @@ export default function TermsPage() {
           Review anything before you rely on it or send it. InboxOS is not a
           substitute for professional advice, and we are not liable for the
           consequences of unreviewed output. Where you delegate scheduling to
-          Vela, you accept that it will send scheduling messages on your behalf
-          within the limits you set.
+          the agent, you accept that it will send scheduling messages on your
+          behalf within the limits you set.
         </p>
       </Section>
 

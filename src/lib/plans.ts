@@ -37,7 +37,7 @@ export const PLANS: Plan[] = [
   {
     id: "pro",
     name: "Pro",
-    blurb: "The full assistant: smart mail, meeting recaps, and Vela scheduling.",
+    blurb: "The full assistant: smart mail, meeting recaps, and agent scheduling.",
     monthly: 39,
     annual: 29,
     unit: "per seat / month",
@@ -213,7 +213,7 @@ export const FEATURE_GROUPS: FeatureGroup[] = [
     ],
   },
   {
-    title: "Vela scheduling",
+    title: "Scheduling",
     caption:
       "A scheduling thread is one coordination job — from first outreach until booked, declined, or abandoned.",
     rows: [
@@ -222,7 +222,7 @@ export const FEATURE_GROUPS: FeatureGroup[] = [
       { label: "Double-booking and clash alerts", cells: all(true) },
       { label: "VIP meeting request becomes a draft reply", cells: all(true) },
       {
-        label: "Vela agent: CC or forward to schedule",
+        label: "Scheduling agent: CC or forward to schedule",
         cells: { starter: false, pro: true, team: true, enterprise: true },
       },
       {
@@ -277,8 +277,8 @@ export const FEATURE_GROUPS: FeatureGroup[] = [
 export const ALTERNATIVES = [
   { label: "Email client (Superhuman, Shortwave)", cost: "$25–30" },
   { label: "Meeting notetaker (Fathom, Fireflies)", cost: "$0–20" },
-  // Deliberately not naming Vela here — it's our own module name, and listing it
-  // as a competitor on the same page reads as a mistake.
+  // Named by category, like the two rows above it — this is the line item our
+  // own scheduling agent replaces, so it has to read as someone else's tool.
   { label: "Scheduling agent (Motion, Reclaim-class)", cost: "$19–29+" },
 ];
 
