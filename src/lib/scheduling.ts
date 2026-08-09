@@ -127,6 +127,9 @@ async function publicFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`/api${path}`, {
     ...init,
     headers: {
+      // Ngrok's free tier returns an HTML interstitial for browser UAs unless
+      // this is set. Vercel rewrites forward it to the tunnel destination.
+      "ngrok-skip-browser-warning": "true",
       ...(init?.body ? { "Content-Type": "application/json" } : {}),
       ...(init?.headers ?? {}),
     },

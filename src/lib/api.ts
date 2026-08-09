@@ -71,7 +71,10 @@ function redirectToPlanPicker(): void {
 let refreshInFlight: Promise<boolean> | null = null;
 
 function refreshSession(): Promise<boolean> {
-  refreshInFlight ??= fetch(`/api${REFRESH_PATH}`, { method: "POST" })
+  refreshInFlight ??= fetch(`/api${REFRESH_PATH}`, {
+    method: "POST",
+    headers: { "ngrok-skip-browser-warning": "true" },
+  })
     .then((res) => res.ok)
     .catch(() => false)
     .finally(() => {
@@ -90,6 +93,10 @@ function send(path: string, init?: RequestInit): Promise<Response> {
   return fetch(`/api${path}`, {
     ...init,
     headers: {
+      // Ngrok free tunnels serve an HTML warning page to browser UAs; without
+      // this header every `/api` call through a tunnel returns DOCTYPE HTML
+      // and JSON.parse blows up with "Unexpected token '<'".
+      "ngrok-skip-browser-warning": "true",
       ...(isFormData ? {} : { "Content-Type": "application/json" }),
       ...(init?.headers ?? {}),
     },
