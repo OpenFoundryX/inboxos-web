@@ -5,7 +5,13 @@ import Markdown from "./Markdown";
 import MessageBubble from "./MessageBubble";
 import SourceList from "./SourceList";
 import StageIndicator from "./StageIndicator";
-import type { ActionStatus, ChatMessage, ChatSource } from "@/lib/chat";
+import UsageBadge from "./UsageBadge";
+import type {
+  ActionStatus,
+  ChatMessage,
+  ChatSource,
+  ChatUsage,
+} from "@/lib/chat";
 
 export default function MessageList({
   messages,
@@ -13,6 +19,7 @@ export default function MessageList({
   stage,
   streamedText,
   streamedSources,
+  streamedUsage,
   error,
   onRetry,
   onActionsResolved,
@@ -22,9 +29,14 @@ export default function MessageList({
   stage: string | null;
   streamedText: string;
   streamedSources: ChatSource[];
+  streamedUsage: ChatUsage | null;
   error: string | null;
   onRetry: () => void;
-  onActionsResolved: (messageId: string, status: ActionStatus, results: string[]) => void;
+  onActionsResolved: (
+    messageId: string,
+    status: ActionStatus,
+    results: string[],
+  ) => void;
 }) {
   const endRef = useRef<HTMLDivElement>(null);
 
@@ -36,7 +48,11 @@ export default function MessageList({
   return (
     <div className="mx-auto w-full max-w-3xl space-y-5 px-4 py-6">
       {messages.map((m) => (
-        <MessageBubble key={m.id} message={m} onActionsResolved={onActionsResolved} />
+        <MessageBubble
+          key={m.id}
+          message={m}
+          onActionsResolved={onActionsResolved}
+        />
       ))}
 
       {streaming ? (
@@ -48,6 +64,7 @@ export default function MessageList({
             <div className="rounded-2xl bg-card px-4 py-3">
               <Markdown text={streamedText} />
               <SourceList sources={streamedSources} />
+              <UsageBadge usage={streamedUsage} />
             </div>
           ) : null}
         </div>

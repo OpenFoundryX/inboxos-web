@@ -38,9 +38,11 @@ export type ConversationDetail = Conversation & { messages: ChatMessage[] };
 /** One slash command, as served by GET /chat/commands. */
 export type SlashCommandInfo = { name: string; summary: string; usage: string };
 
-export const listConversations = () => apiFetch<Conversation[]>("/chat/conversations");
+export const listConversations = () =>
+  apiFetch<Conversation[]>("/chat/conversations");
 
-export const listCommands = () => apiFetch<SlashCommandInfo[]>("/chat/commands");
+export const listCommands = () =>
+  apiFetch<SlashCommandInfo[]>("/chat/commands");
 
 export const getConversation = (id: string) =>
   apiFetch<ConversationDetail>(`/chat/conversations/${id}`);
@@ -54,12 +56,23 @@ export const confirmActions = (messageId: string, approve: boolean) =>
     body: JSON.stringify({ approve }),
   });
 
+/** What one answer cost, reported by the model provider rather than estimated. */
+export type ChatUsage = {
+  model: string;
+  prompt_tokens: number;
+  completion_tokens: number;
+  total_tokens: number;
+};
+
 export type StreamHandlers = {
   onConversation?: (c: { id: string; title: string }) => void;
   onStage?: (label: string) => void;
   onToken?: (text: string) => void;
   onSources?: (sources: ChatSource[]) => void;
   onActions?: (actions: ChatAction[], summary: string) => void;
+  /** Arrives after the last token, and only for answers that called a model —
+   *  a fixed slash command never emits one. */
+  onUsage?: (usage: ChatUsage) => void;
   onDone?: (messageId: string) => void;
   onError?: (message: string) => void;
 };
@@ -94,7 +107,9 @@ export async function streamAsk(
 
   if (!res.ok || !res.body) {
     handlers.onError?.(
-      res.status === 401 ? "Your session expired — please sign in again." : "Request failed.",
+      res.status === 401
+        ? "Your session expired — please sign in again."
+        : "Request failed.",
     );
     return;
   }
@@ -161,7 +176,10 @@ function dispatch(frame: string, handlers: StreamHandlers): string | null {
 
   switch (event) {
     case "conversation":
-      handlers.onConversation?.({ id: String(data.id), title: String(data.title) });
+      handlers.onConversation?.({
+        id: String(data.id),
+        title: String(data.title),
+      });
       break;
     case "stage":
       handlers.onStage?.(String(data.label));
@@ -173,7 +191,18 @@ function dispatch(frame: string, handlers: StreamHandlers): string | null {
       handlers.onSources?.((data.sources as ChatSource[]) ?? []);
       break;
     case "actions":
-      handlers.onActions?.((data.actions as ChatAction[]) ?? [], String(data.summary ?? ""));
+      handlers.onActions?.(
+        (data.actions as ChatAction[]) ?? [],
+        String(data.summary ?? ""),
+      );
+      break;
+    case "usage":
+      handlers.onUsage?.({
+        model: String(data.model ?? ""),
+        prompt_tokens: Number(data.prompt_tokens ?? 0),
+        completion_tokens: Number(data.completion_tokens ?? 0),
+        total_tokens: Number(data.total_tokens ?? 0),
+      });
       break;
     case "done":
       handlers.onDone?.(String(data.message_id));

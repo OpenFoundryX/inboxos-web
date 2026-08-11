@@ -1,0 +1,23 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="InboxOS">
+  <title>InboxOS</title>
+
+  <!-- App-icon ground in the brand accent. Full-bleed rounded square rather
+       than a floating glyph: Google's consent screen, favicons and app tiles
+       all crop to a square, and a mark that already fills one survives every
+       one of those without a second asset. -->
+  <rect width="512" height="512" rx="116" fill="#1F6F5C"/>
+
+  <!-- One tray, nothing else. An earlier pass floated two "held message" lines
+       above it to hint at batching; they read acceptably at 256px and turned
+       into an illegible smudge at 32, which is exactly the size a favicon is
+       seen at. A mark that needs a second simplified variant to survive is a
+       mark carrying detail it has not earned.
+       Strokes rather than fills for the same reason: a filled glyph of this
+       shape closes its counters and goes solid when small. -->
+  <g stroke="#FFFFFF" stroke-width="32" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <rect x="104" y="128" width="304" height="256" rx="48"/>
+    <!-- The dipped divider is what makes this an inbox rather than a box. It
+         runs edge to edge so the tray reads as one continuous form. -->
+    <path d="M104 284 H180 L206 332 H306 L332 284 H408"/>
+  </g>
+</svg>

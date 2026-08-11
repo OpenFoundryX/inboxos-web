@@ -14,6 +14,7 @@ import {
   type ActionStatus,
   type ChatMessage,
   type ChatSource,
+  type ChatUsage,
   type Conversation,
   type SlashCommandInfo,
 } from "@/lib/chat";
@@ -34,6 +35,8 @@ export default function ChatPage() {
   const [stage, setStage] = useState<string | null>(null);
   const [streamedText, setStreamedText] = useState("");
   const [streamedSources, setStreamedSources] = useState<ChatSource[]>([]);
+  // Arrives once, after the final token, so it renders under a finished answer.
+  const [streamedUsage, setStreamedUsage] = useState<ChatUsage | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const abortRef = useRef<AbortController | null>(null);
@@ -73,6 +76,7 @@ export default function ChatPage() {
     setStreaming(false);
     setStreamedText("");
     setStreamedSources([]);
+    setStreamedUsage(null);
     setStage(null);
     setError(null);
     setDraft("");
@@ -92,6 +96,7 @@ export default function ChatPage() {
     setMessages([]);
     setStreamedText("");
     setStreamedSources([]);
+    setStreamedUsage(null);
     setStage(null);
     setError(null);
     setDraft("");
@@ -103,10 +108,16 @@ export default function ChatPage() {
     if (id === activeId) startNew();
   }
 
-  function resolveActions(messageId: string, status: ActionStatus, results: string[]) {
+  function resolveActions(
+    messageId: string,
+    status: ActionStatus,
+    results: string[],
+  ) {
     setMessages((ms) =>
       ms.map((m) =>
-        m.id === messageId ? { ...m, action_status: status, action_results: results } : m,
+        m.id === messageId
+          ? { ...m, action_status: status, action_results: results }
+          : m,
       ),
     );
   }
@@ -125,6 +136,7 @@ export default function ChatPage() {
       setStage(null);
       setStreamedText("");
       setStreamedSources([]);
+      setStreamedUsage(null);
 
       // Optimistic user bubble; replaced by the server copy on reload.
       const localId = `local-${Date.now()}`;
@@ -161,6 +173,7 @@ export default function ChatPage() {
             setStreamedText(answer);
           },
           onSources: (s) => setStreamedSources(s),
+          onUsage: (u) => setStreamedUsage(u),
           onError: (m) => {
             // A stale error from a turn the user already navigated away from
             // (via startNew/openConversation aborting this controller) must
@@ -170,6 +183,7 @@ export default function ChatPage() {
             setStage(null);
             setStreamedText("");
             setStreamedSources([]);
+            setStreamedUsage(null);
             const cid = conversationId;
             if (!cid) {
               setError(m);
@@ -213,7 +227,9 @@ export default function ChatPage() {
                 setMessages(detail.messages);
               } catch {
                 if (controller.signal.aborted) return;
-                setError("Answer saved, but the transcript couldn't be reloaded.");
+                setError(
+                  "Answer saved, but the transcript couldn't be reloaded.",
+                );
               }
             }
             // Batched with the setMessages above, so the streamed bubble is
@@ -222,6 +238,7 @@ export default function ChatPage() {
             setStage(null);
             setStreamedText("");
             setStreamedSources([]);
+            setStreamedUsage(null);
             void refreshConversations();
           },
         },
@@ -268,9 +285,14 @@ export default function ChatPage() {
                   onValueChange={setDraft}
                 />
                 <p className="mt-3 text-center text-xs text-ink/40">
-                  Type <span className="font-mono text-ink/60">/</span> for commands
+                  Type <span className="font-mono text-ink/60">/</span> for
+                  commands
                 </p>
-                {error ? <p className="mt-4 text-center text-sm text-accent">{error}</p> : null}
+                {error ? (
+                  <p className="mt-4 text-center text-sm text-accent">
+                    {error}
+                  </p>
+                ) : null}
               </div>
             </div>
           ) : (
@@ -282,6 +304,7 @@ export default function ChatPage() {
                   stage={stage}
                   streamedText={streamedText}
                   streamedSources={streamedSources}
+                  streamedUsage={streamedUsage}
                   error={error}
                   onRetry={() => void ask(lastQuestion.current)}
                   onActionsResolved={resolveActions}

@@ -1,33 +1,40 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Button from "@/components/ui/Button";
 import StepShell from "@/components/onboarding/StepShell";
 import { CheckIcon } from "@/components/app/icons";
 import { backendConfigured } from "@/lib/session";
 import {
-  getCalendarConnectUrl,
-  getCalendarStatus,
-  getGmailConnectUrl,
-  getGmailStatus,
+  getConnectionState,
+  getGoogleConnectUrl,
+  type GoogleStatus,
 } from "@/lib/connections";
 
-type Service = "gmail" | "calendar";
+/** The callback redirects back here with an outcome. Without reading it, a
+ *  failed grant looks identical to a user who simply hasn't clicked yet — the
+ *  page would sit there saying "not connected" with no reason given. */
+const CALLBACK_ERRORS: Record<string, string> = {
+  account_mismatch:
+    "That's a different Google account from the one you signed in with. Pick the same account and try again.",
+  // Retrying cannot help — the grant was given and the server failed to store
+  // it. Saying "try again" would just loop the user through consent forever.
+  server_error:
+    "Google approved the connection but InboxOS couldn't save it. This is a server configuration problem, not something you did — check the API logs.",
+};
 
 export default function ConnectPage() {
   const router = useRouter();
+  const params = useSearchParams();
   const [loading, setLoading] = useState(true);
-  const [gmail, setGmail] = useState(false);
-  const [calendar, setCalendar] = useState(false);
-  const [busy, setBusy] = useState<Service | null>(null);
+  const [status, setStatus] = useState<GoogleStatus | null>(null);
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     try {
-      const [g, c] = await Promise.all([getGmailStatus(), getCalendarStatus()]);
-      setGmail(g.connected);
-      setCalendar(c.connected);
+      setStatus(await getConnectionState());
       setError(null);
     } catch {
       setError("Couldn't reach the InboxOS backend. Make sure it's running and you're signed in.");
@@ -41,83 +48,82 @@ export default function ConnectPage() {
       router.replace("/dashboard");
       return;
     }
+    if (params.get("connected") === "0") {
+      setError(
+        CALLBACK_ERRORS[params.get("reason") ?? ""] ??
+          "Google didn't complete the connection. Please try again.",
+      );
+    }
     refresh();
-  }, [router, refresh]);
+  }, [router, refresh, params]);
 
-  async function connect(service: Service) {
-    setBusy(service);
+  async function connect() {
+    setBusy(true);
     setError(null);
     try {
-      const { redirect_url } =
-        service === "gmail" ? await getGmailConnectUrl() : await getCalendarConnectUrl();
+      const { redirect_url } = await getGoogleConnectUrl();
       window.location.href = redirect_url;
     } catch {
-      setError(`Couldn't start the ${service === "gmail" ? "Gmail" : "Calendar"} connection.`);
-      setBusy(null);
+      setError("Couldn't start the Google connection.");
+      setBusy(false);
     }
   }
 
-  const bothConnected = gmail && calendar;
+  // Both scope sets are needed: mail without calendar can't schedule, calendar
+  // without mail has nothing to act on.
+  const ready = Boolean(status?.gmail && status?.calendar);
 
-  // StepShell, like steps 2-4 — but with the skip swapped for "Refresh status"
-  // (nothing works without both grants) and Continue held until they land.
   return (
     <StepShell
-      title="Connect your accounts"
-      blurb="InboxOS needs access to Gmail to hold and sort your mail, and to Google Calendar to handle scheduling."
+      title="Connect your Google account"
+      blurb="InboxOS needs Gmail to hold and sort your mail, and Google Calendar to handle scheduling. Both come from a single sign-in."
       error={error}
       busy={false}
-      continueDisabled={!bothConnected}
+      continueDisabled={!ready}
       onContinue={() => router.replace("/onboarding/mail")}
       secondaryLabel="Refresh status"
       onSecondary={refresh}
-      footnote="You'll be sent to grant access, then returned here."
+      footnote="You'll be sent to Google to grant access, then returned here."
     >
       <div className="space-y-2.5">
-        <ServiceRow
-          title="Gmail"
-          desc="Read, organize, and draft replies."
-          letter="M"
-          badgeClass="bg-accent/15 text-accent"
-          connected={gmail}
-          busy={busy === "gmail"}
+        <ConnectRow
+          status={status}
           loading={loading}
-          onConnect={() => connect("gmail")}
+          busy={busy}
+          onConnect={connect}
         />
-        <ServiceRow
-          title="Google Calendar"
-          desc="Suggest availability and schedule meetings."
-          letter="C"
-          badgeClass="bg-blue-500/15 text-blue-600"
-          connected={calendar}
-          busy={busy === "calendar"}
-          loading={loading}
-          onConnect={() => connect("calendar")}
-        />
+        {status?.connected && !ready ? (
+          <p className="px-1 text-xs text-ink/50">
+            Connected, but the grant is missing{" "}
+            {!status.gmail ? "Gmail" : "Calendar"} access. Reconnect and make sure
+            every permission stays ticked.
+          </p>
+        ) : null}
+        {ready && !status?.listening ? (
+          <p className="px-1 text-xs text-ink/50">
+            Setting up your mailbox — this takes a few seconds. Hit Refresh
+            status if it doesn&apos;t settle.
+          </p>
+        ) : null}
       </div>
     </StepShell>
   );
 }
 
-function ServiceRow({
-  title,
-  desc,
-  letter,
-  badgeClass,
-  connected,
-  busy,
+function ConnectRow({
+  status,
   loading,
+  busy,
   onConnect,
 }: {
-  title: string;
-  desc: string;
-  letter: string;
-  badgeClass: string;
-  connected: boolean;
-  busy: boolean;
+  status: GoogleStatus | null;
   loading: boolean;
+  busy: boolean;
   onConnect: () => void;
 }) {
+  const connected = Boolean(status?.gmail && status?.calendar);
+  const label = status?.needs_reconnect ? "Reconnect" : "Connect";
+
   return (
     <div
       className={`flex items-center justify-between gap-3 rounded-2xl border p-4 transition duration-200 ${
@@ -127,14 +133,16 @@ function ServiceRow({
       }`}
     >
       <div className="flex min-w-0 items-center gap-3">
-        <div
-          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-sm font-bold ${badgeClass}`}
-        >
-          {letter}
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent/15 text-sm font-bold text-accent">
+          G
         </div>
         <div className="min-w-0">
-          <div className="text-sm font-semibold text-ink">{title}</div>
-          <div className="truncate text-xs text-ink/50">{desc}</div>
+          <div className="text-sm font-semibold text-ink">Google</div>
+          <div className="truncate text-xs text-ink/50">
+            {connected && status?.email
+              ? status.email
+              : "Gmail and Google Calendar"}
+          </div>
         </div>
       </div>
       {loading ? (
@@ -146,7 +154,7 @@ function ServiceRow({
         </span>
       ) : (
         <Button variant="dark" onClick={onConnect} disabled={busy} className="shrink-0">
-          {busy ? "Opening…" : "Connect"}
+          {busy ? "Opening…" : label}
         </Button>
       )}
     </div>

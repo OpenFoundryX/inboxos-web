@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Card from "@/components/ui/Card";
-import { getCalendarConnectUrl, getCalendarStatus } from "@/lib/connections";
+import { getConnectionState, getGoogleConnectUrl } from "@/lib/connections";
 import {
   deleteOverride,
   listOverrides,
@@ -34,9 +34,9 @@ export default function AvailabilityTab({ settings, onSaveSettings, onNotify }: 
     listOverrides()
       .then(setOverrides)
       .catch(() => undefined);
-    getCalendarStatus()
-      .then(({ connected }) => setConnected(connected))
-      .catch(() => setConnected(false));
+    // Calendar access comes from the one Google grant, so this reads the same
+    // row the connect step wrote rather than asking a separate question.
+    getConnectionState().then(({ calendar }) => setConnected(calendar));
   }, []);
 
   const hours = new Map(draft.weekly_hours.map((h) => [h.weekday, h]));
@@ -155,7 +155,7 @@ export default function AvailabilityTab({ settings, onSaveSettings, onNotify }: 
                   disabled={busy || connected === null}
                   onClick={async () => {
                     try {
-                      window.location.href = (await getCalendarConnectUrl()).redirect_url;
+                      window.location.href = (await getGoogleConnectUrl()).redirect_url;
                     } catch (e) {
                       onNotify(
                         e instanceof Error ? e.message : "Could not start connection",
@@ -164,7 +164,7 @@ export default function AvailabilityTab({ settings, onSaveSettings, onNotify }: 
                   }}
                   className="w-fit rounded-full bg-ink px-4 py-2 text-xs font-semibold text-white disabled:opacity-40"
                 >
-                  Connect calendar
+                  Connect Google
                 </button>
               )}
             </div>
