@@ -269,8 +269,8 @@ export default function TermsPage() {
           connection with a merger, acquisition or sale of assets.
         </p>
         <p>
-          Legal notices go to <Fill value={LEGAL.legalEmail} /> and to{" "}
-          <Fill value={LEGAL.registeredAddress} />.
+          Legal notices go to <Fill value={LEGAL.legalEmail} />. We are
+          registered in <Fill value={LEGAL.registeredAddress} />.
         </p>
       </Section>
     </LegalDoc>

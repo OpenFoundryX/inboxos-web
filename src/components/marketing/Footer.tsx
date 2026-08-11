@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Wordmark from "@/components/ui/Wordmark";
+import { APP_NAME, APP_TAGLINE } from "@/lib/app";
 import { LEGAL } from "@/lib/legal";
 
 /** `href: null` means the page doesn't exist yet. Those render as plain text
@@ -11,6 +12,7 @@ const COLS: { title: string; links: FooterLink[] }[] = [
   {
     title: "Product",
     links: [
+      { label: `What ${APP_NAME} does`, href: "/#what-it-is" },
       { label: "Pricing", href: "/#pricing" },
       { label: "Compare plans", href: "/#compare" },
       { label: "Security", href: "/privacy#security" },
@@ -40,6 +42,7 @@ const COLS: { title: string; links: FooterLink[] }[] = [
     links: [
       { label: "Privacy policy", href: "/privacy" },
       { label: "Terms of service", href: "/terms" },
+      { label: "How we use Google data", href: "/#google-data" },
       { label: "Cookie policy", href: "/privacy#cookies" },
     ],
   },
@@ -84,10 +87,20 @@ export default function Footer() {
           ))}
         </div>
         <div className="mt-14 flex flex-col items-start justify-between gap-4 border-t border-black/5 pt-8 md:flex-row md:items-center">
-          <Wordmark size="xl" />
+          <div>
+            <Wordmark size="xl" />
+            {/* Spelled out, not just drawn: the OAuth review needs to find the
+             *  registered name and the purpose as readable text on the page. */}
+            <p className="mt-2 max-w-sm text-sm leading-relaxed text-ink/50">
+              <span className="font-medium text-ink/70">{APP_NAME}</span> —{" "}
+              {APP_TAGLINE}
+            </p>
+          </div>
           <div className="flex flex-col items-start gap-1 md:items-end">
+            {/* Sourced from LEGAL rather than typed, so the registered name in
+             *  the footer can't drift from the one in the policy documents. */}
             <p className="text-sm text-ink/50">
-              © 2026 InboxOS, Inc. All rights reserved.
+              © 2026 {LEGAL.entity}. All rights reserved.
             </p>
             <p className="flex gap-4 text-sm">
               <Link href="/privacy" className="text-ink/50 hover:text-ink">

@@ -1,4 +1,6 @@
 import Hero from "@/components/marketing/Hero";
+import Purpose from "@/components/marketing/Purpose";
+import GoogleData from "@/components/marketing/GoogleData";
 import FeatureRow from "@/components/marketing/FeatureRow";
 import EmailFlow from "@/components/marketing/EmailFlow";
 import ValueStack from "@/components/marketing/ValueStack";
@@ -10,6 +12,7 @@ export default function LandingPage() {
   return (
     <>
       <Hero />
+      <Purpose />
       <section id="how" className="mx-auto max-w-6xl px-6">
         <FeatureRow
           eyebrow="Delivery"
@@ -95,6 +98,7 @@ export default function LandingPage() {
         </FeatureRow>
       </section>
       <EmailFlow />
+      <GoogleData />
       <ValueStack />
       <Pricing />
       <PlanComparison />

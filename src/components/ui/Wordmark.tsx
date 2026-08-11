@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { APP_NAME } from "@/lib/app";
 
 const SIZES = {
   sm: "text-lg",
@@ -15,11 +16,20 @@ type Props = {
 
 /** Two-tone lockup: "inbox" in the UI sans, "OS" in the marketing serif. The
  *  split is the mark — it carries the brand without needing a colored bold
- *  word, so it stays legible at sidebar size and holds up at footer size. */
+ *  word, so it stays legible at sidebar size and holds up at footer size.
+ *
+ *  The lockup is lowercase for design reasons, but the registered application
+ *  name is `APP_NAME` ("InboxOS") — that is what the Google OAuth consent screen
+ *  says, and screen readers and crawlers should agree with it. So the styled
+ *  glyphs are hidden from the accessibility tree and the real name is exposed
+ *  alongside them. */
 export default function Wordmark({ size = "md", href = "/", className = "" }: Props) {
   const inner = (
     <span className={`${SIZES[size]} font-medium text-ink ${className}`}>
-      inbox<span className="font-serif font-semibold text-accent">OS</span>
+      <span aria-hidden="true">
+        inbox<span className="font-serif font-semibold text-accent">OS</span>
+      </span>
+      <span className="sr-only">{APP_NAME}</span>
     </span>
   );
 

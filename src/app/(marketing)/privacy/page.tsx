@@ -19,7 +19,7 @@ export default function PrivacyPage() {
       <Section id="scope" heading="1. Who this covers">
         <p>
           This policy applies to {LEGAL.entity} (&ldquo;InboxOS&rdquo;,
-          &ldquo;we&rdquo;), registered at <Fill value={LEGAL.registeredAddress} />
+          &ldquo;we&rdquo;), registered in <Fill value={LEGAL.registeredAddress} />
           , and to the InboxOS web app and the email, calendar and meeting
           features it provides.
         </p>
@@ -239,8 +239,7 @@ export default function PrivacyPage() {
         <p>
           Email <Fill value={LEGAL.privacyEmail} /> and we will respond within
           30 days. If you are in the EU or UK you can complain to your local
-          supervisory authority; our representative is{" "}
-          <Fill value={LEGAL.euRepresentative} />.
+          supervisory authority.
         </p>
       </Section>
 
@@ -279,10 +278,15 @@ export default function PrivacyPage() {
 
       <Section id="transfers" heading="12. International transfers">
         <p>
-          We may process data outside your country, including in the United
-          States. Where we transfer personal data out of the EU or UK we rely on
-          the European Commission&rsquo;s Standard Contractual Clauses together
-          with additional safeguards where needed.
+          Your data is processed in more than one country. Application hosting,
+          the database and the job queue run in Singapore. Meeting recording and
+          transcription run in the United States, as does the AI processing
+          described in section 4. Billing is processed in India. The
+          subprocessor table in section 8 names who operates each.
+        </p>
+        <p>
+          By using InboxOS you accept that your data is processed in these
+          locations.
         </p>
       </Section>
 
@@ -331,7 +335,7 @@ export default function PrivacyPage() {
       <Section id="contact" heading="16. Contact">
         <p>
           Privacy questions: <Fill value={LEGAL.privacyEmail} />. Anything else:{" "}
-          <Fill value={LEGAL.supportEmail} />. Postal mail reaches us at{" "}
+          <Fill value={LEGAL.supportEmail} />. We are registered in{" "}
           <Fill value={LEGAL.registeredAddress} />.
         </p>
         <p>

@@ -4,9 +4,10 @@ import Wordmark from "@/components/ui/Wordmark";
 import { LEGAL } from "@/lib/legal";
 
 const LINKS = [
-  { href: "#how", label: "How it works" },
-  { href: "#pricing", label: "Pricing" },
-  { href: "#compare", label: "Compare plans" },
+  { href: "/#what-it-is", label: "What it does" },
+  { href: "/#how", label: "How it works" },
+  { href: "/#google-data", label: "Your data" },
+  { href: "/#pricing", label: "Pricing" },
 ];
 
 export default function Navbar() {
