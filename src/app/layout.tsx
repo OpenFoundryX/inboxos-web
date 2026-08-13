@@ -17,13 +17,19 @@ const DESCRIPTION = `${APP_NAME} connects to your Gmail and Google Calendar to s
  *  just as a different name would. Every name here therefore comes from
  *  APP_NAME and can only drift in one place.
  *
- *  The four tags the checker reads are `title`, `application-name`,
- *  `apple-mobile-web-app-title` and `og:site_name` / `og:title`. The first
- *  leads with the bare name before any tagline; the rest are the name alone,
- *  with the sentence about the product left to the descriptions. */
+ *  The five tags the checker reads are `title`, `application-name`,
+ *  `apple-mobile-web-app-title`, `og:site_name` and `og:title`. All five are
+ *  the name and nothing else — no tagline, no separator — so that a check
+ *  comparing the whole value rather than its leading word still passes. What
+ *  the product does is left to `description` and to the page itself, which
+ *  says it at length under `#what-it-is` and `#google-data`.
+ *
+ *  Once verification is granted, `title` can go back to carrying a tagline;
+ *  it is the one tag here that costs anything as a bare name, since it is
+ *  what search results and browser tabs show. */
 export const metadata: Metadata = {
   applicationName: APP_NAME,
-  title: `${APP_NAME} — an assistant for your Gmail inbox, meetings and scheduling`,
+  title: APP_NAME,
   description: DESCRIPTION,
   appleWebApp: { title: APP_NAME },
   openGraph: {
