@@ -14,7 +14,9 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 bg-canvas/80 backdrop-blur">
       <nav className="mx-auto flex max-w-6xl items-center justify-between rounded-full border border-black/5 bg-card px-5 py-3 shadow-sm mt-4">
-        <Wordmark size="md" />
+        {/* `mark` on: the home page has to show the same icon that's uploaded
+         *  to the OAuth consent screen for the branding review to match them. */}
+        <Wordmark size="md" mark />
         <div className="hidden items-center gap-7 md:flex">
           {LINKS.map((l) => (
             <Link

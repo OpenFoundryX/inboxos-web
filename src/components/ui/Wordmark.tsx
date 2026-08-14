@@ -1,4 +1,5 @@
 import Link from "next/link";
+import LogoMark from "@/components/ui/LogoMark";
 import { APP_NAME } from "@/lib/app";
 
 const SIZES = {
@@ -11,25 +12,39 @@ const SIZES = {
 type Props = {
   size?: keyof typeof SIZES;
   href?: string | null;
+  /** Show the app icon beside the name. On for the surfaces a Google reviewer
+   *  lands on — see the note below. */
+  mark?: boolean;
   className?: string;
 };
 
-/** Two-tone lockup: "inbox" in the UI sans, "OS" in the marketing serif. The
+/** Two-tone lockup: "Inbox" in the UI sans, "OS" in the marketing serif. The
  *  split is the mark — it carries the brand without needing a colored bold
  *  word, so it stays legible at sidebar size and holds up at footer size.
  *
- *  The lockup is lowercase for design reasons, but the registered application
- *  name is `APP_NAME` ("InboxOS") — that is what the Google OAuth consent screen
- *  says, and screen readers and crawlers should agree with it. So the styled
- *  glyphs are hidden from the accessibility tree and the real name is exposed
- *  alongside them. */
-export default function Wordmark({ size = "md", href = "/", className = "" }: Props) {
+ *  The lockup used to set the name lowercase ("inboxOS") for design reasons,
+ *  with the real `APP_NAME` tucked into an `sr-only` span alongside it. That
+ *  cost more than it bought: Google's OAuth branding review compares the app
+ *  name on the consent screen against the name shown on the home page, and a
+ *  human reviewer reads the glyphs on screen, not the accessibility tree — so
+ *  the page they saw said "inboxOS" while the consent screen said "InboxOS".
+ *  Capitalising the I keeps the two-tone treatment and makes the visible text
+ *  an exact match, which also lets the aria-hidden/sr-only pair go away. */
+export default function Wordmark({
+  size = "md",
+  href = "/",
+  mark = false,
+  className = "",
+}: Props) {
+  const [head, tail] = [APP_NAME.slice(0, -2), APP_NAME.slice(-2)];
+
   const inner = (
-    <span className={`${SIZES[size]} font-medium text-ink ${className}`}>
-      <span aria-hidden="true">
-        inbox<span className="font-serif font-semibold text-accent">OS</span>
+    <span className="inline-flex items-center gap-2.5">
+      {mark && <LogoMark size={size} />}
+      <span className={`${SIZES[size]} font-medium text-ink ${className}`}>
+        {head}
+        <span className="font-serif font-semibold text-accent">{tail}</span>
       </span>
-      <span className="sr-only">{APP_NAME}</span>
     </span>
   );
 

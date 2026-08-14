@@ -24,7 +24,7 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-canvas px-6">
       <div className="mb-8">
-        <Wordmark size="lg" />
+        <Wordmark size="lg" mark />
       </div>
       <Card className="w-full max-w-sm p-8 text-center shadow-sm">
         <h1 className="font-serif text-2xl font-semibold">Welcome back</h1>

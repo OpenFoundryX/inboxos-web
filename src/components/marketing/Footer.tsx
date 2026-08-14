@@ -88,7 +88,7 @@ export default function Footer() {
         </div>
         <div className="mt-14 flex flex-col items-start justify-between gap-4 border-t border-black/5 pt-8 md:flex-row md:items-center">
           <div>
-            <Wordmark size="xl" />
+            <Wordmark size="xl" mark />
             {/* Spelled out, not just drawn: the OAuth review needs to find the
              *  registered name and the purpose as readable text on the page. */}
             <p className="mt-2 max-w-sm text-sm leading-relaxed text-ink/50">
