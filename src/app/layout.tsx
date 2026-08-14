@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Source_Serif_4 } from "next/font/google";
 import { APP_NAME } from "@/lib/app";
+import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -28,6 +29,12 @@ const DESCRIPTION = `${APP_NAME} connects to your Gmail and Google Calendar to s
  *  it is the one tag here that costs anything as a bare name, since it is
  *  what search results and browser tabs show. */
 export const metadata: Metadata = {
+  // Without a metadataBase, `openGraph.url` and the canonical below resolve
+  // against localhost at build time. It also has to be the `www` host: the apex
+  // 308s there, and a canonical pointing at a URL that redirects is a canonical
+  // Google gets to ignore.
+  metadataBase: new URL(SITE_URL),
+  alternates: { canonical: "/" },
   applicationName: APP_NAME,
   title: APP_NAME,
   description: DESCRIPTION,
@@ -36,6 +43,7 @@ export const metadata: Metadata = {
     siteName: APP_NAME,
     title: APP_NAME,
     description: DESCRIPTION,
+    url: "/",
     type: "website",
   },
   // Wired from the logo files already in `public/`. Without this the document

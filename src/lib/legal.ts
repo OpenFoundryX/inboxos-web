@@ -22,13 +22,13 @@ export const LEGAL = {
   /** Indian jurisdiction clauses name a city, not the country. Matches the
    *  registered office above. */
   courts: "Bengaluru",
-  privacyEmail: "privacy@inboxhq.com",
-  supportEmail: "support@inboxhq.com",
-  legalEmail: "legal@inboxhq.com",
+  privacyEmail: "privacy@inboxoshq.com",
+  supportEmail: "support@inboxoshq.com",
+  legalEmail: "legal@inboxoshq.com",
   /** Where Team/Enterprise's "Talk to us" CTAs point — those tiers have no
    *  Checkout path (no workspace/org model exists yet to sell against), so
    *  routing them anywhere but a real human contact is dishonest. */
-  salesEmail: "sales@inboxhq.com",
+  salesEmail: "sales@inboxoshq.com",
   /** Public booking link for the "Talk to a human" section. Deliberately not
    *  a TODO(): it is a real live URL, so it is the one contact route on the
    *  site that works today. Not covered by `unresolvedLegalFields`. */
