@@ -76,13 +76,20 @@ export default function NotetakerStep() {
         window.localStorage.getItem(BATCHING_CHOICE_KEY) !== null &&
         window.localStorage.getItem(BATCHING_CHOICE_KEY) !== "live";
       await finishOnboarding(activateBatching);
+      // BILLING DISABLED (temporary, for testing) — the wizard ends on the
+      // dashboard, not the plan picker. Restore the line below (and drop the
+      // replace above it) when payments come back; the gate it pairs with is
+      // commented out in `dashboard/layout.tsx`.
+      //
       // The plan picker, not the dashboard: the spec's paywall position is
       // "after connect, before dashboard", and a card has not been asked for
       // yet at this point in the wizard. `/onboarding/plan` sends anyone who
       // hasn't chosen a plan straight back here anyway (see
       // `dashboard/layout.tsx`), so landing here directly just skips that
       // bounce for the common case.
-      router.replace("/onboarding/plan");
+      //
+      // router.replace("/onboarding/plan");
+      router.replace("/dashboard");
     } catch {
       // finishOnboarding only throws when completeOnboarding failed — the one
       // call that must land, or the user re-enters the wizard on next login.

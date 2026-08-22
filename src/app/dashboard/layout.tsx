@@ -2,8 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { backendConfigured, checkAccess } from "@/lib/session";
-import { getSubscription } from "@/lib/billing";
+import { checkAccess } from "@/lib/session";
+// BILLING DISABLED: `backendConfigured` and `getSubscription` are used only by
+// the commented-out paywall gate below; restoring it restores these too.
+// import { backendConfigured } from "@/lib/session";
+// import { getSubscription } from "@/lib/billing";
 import Sidebar from "@/components/app/Sidebar";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -22,6 +25,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         router.replace(connected ? "/onboarding/mail" : "/onboarding/connect");
         return;
       }
+      // BILLING DISABLED (temporary, for testing) — the app's hard paywall
+      // lived here, and is commented out below rather than deleted. Being
+      // onboarded is now the only condition for reaching the dashboard. The
+      // matching backend short-circuits are in `services/billing/access.py`
+      // and `api/v1/billing.py::_subscription_started`; turning payments back
+      // on means restoring all three together.
+      //
       // The wizard itself is done, but the paywall's "before dashboard" gate
       // is a second, independent check: it must confirm the user actually
       // authorised a subscription, not just that `plan_id` is set. `plan_id`
@@ -38,19 +48,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       // true from when they first authorised, so this never bounces them:
       // the dashboard stays reachable read-only, per the spec, for anyone
       // who has already been through this gate once.
-      if (backendConfigured()) {
-        try {
-          const sub = await getSubscription();
-          if (!active) return;
-          if (!sub.subscription_started) {
-            router.replace("/onboarding/plan");
-            return;
-          }
-        } catch {
-          // Unreachable billing API: don't strand the user on a spinner over
-          // a transient failure unrelated to whether they're onboarded.
-        }
-      }
+      //
+      // if (backendConfigured()) {
+      //   try {
+      //     const sub = await getSubscription();
+      //     if (!active) return;
+      //     if (!sub.subscription_started) {
+      //       router.replace("/onboarding/plan");
+      //       return;
+      //     }
+      //   } catch {
+      //     // Unreachable billing API: don't strand the user on a spinner over
+      //     // a transient failure unrelated to whether they're onboarded.
+      //   }
+      // }
       setReady(true);
     });
     return () => {
