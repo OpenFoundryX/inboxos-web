@@ -45,7 +45,7 @@ export default function Navbar() {
           <Button variant="outline" href="/login">
             Log in
           </Button>
-          <Button variant="primary" href="/login">
+          <Button variant="primary" href={LEGAL.bookingUrl} external>
             Get started
           </Button>
         </div>

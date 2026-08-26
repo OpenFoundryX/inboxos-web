@@ -1,6 +1,7 @@
 import Button from "@/components/ui/Button";
 import ProductMock from "./ProductMock";
 import { APP_NAME } from "@/lib/app";
+import { LEGAL } from "@/lib/legal";
 
 export default function Hero() {
   return (
@@ -20,8 +21,8 @@ export default function Hero() {
       </p>
       <div className="mt-9 flex flex-col items-center gap-4">
         <div className="flex flex-wrap items-center justify-center gap-3">
-          <Button variant="dark" href="/login">
-            Start 7-day Pro trial
+          <Button variant="dark" href={LEGAL.bookingUrl} external>
+            Request access
           </Button>
           <Button variant="outline" href="#pricing">
             Compare plans
