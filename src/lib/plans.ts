@@ -41,7 +41,7 @@ export const PLANS: Plan[] = [
     monthly: 39,
     annual: 29,
     unit: "per seat / month",
-    cta: "Start 7-day Pro trial",
+    cta: "Start 14-day Pro trial",
     featured: true,
     highlights: [
       "1 mailbox",

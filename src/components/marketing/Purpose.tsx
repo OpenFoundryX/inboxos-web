@@ -19,7 +19,7 @@ const FACTS = [
   },
   {
     label: "Who it is for",
-    body: "People whose day is mostly email and meetings. Sold as a paid subscription to individuals and to teams, with a seven-day trial.",
+    body: "People whose day is mostly email and meetings. Sold as a paid subscription to individuals and to teams, with a fourteen-day trial.",
   },
   {
     label: "What it connects to",

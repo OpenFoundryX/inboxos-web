@@ -63,9 +63,9 @@ export default function TermsPage() {
             front at the discounted rate.
           </li>
           <li>
-            <strong>Trial.</strong> The Pro trial runs 7 days and includes
+            <strong>Trial.</strong> The Pro trial runs 14 days and includes
             Pro&rsquo;s full monthly bot-hour and AI draft allowance. The
-            trial ends when the 7 days are up, not before, and card
+            trial ends when the 14 days are up, not before, and card
             authorisation is required up front. Trials are once per customer.
           </li>
           <li>

@@ -148,7 +148,7 @@ export default function Pricing() {
       </div>
 
       <p className="mt-8 text-center text-sm text-ink/50">
-        The Pro trial runs 7 days with Pro&apos;s full 15 bot-hours included,
+        The Pro trial runs 14 days with Pro&apos;s full 15 bot-hours included,
         card required up front, once per customer. Outlook is still in
         development and isn&apos;t billed on any plan yet.
       </p>
