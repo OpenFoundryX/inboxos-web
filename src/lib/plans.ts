@@ -13,6 +13,12 @@ export type Plan = {
   annual: number | null;
   /** Rendered under the price. Seat-based plans say so; Enterprise doesn't. */
   unit: string | null;
+  /** The button's label, and the only thing a buyer reads before clicking it.
+   *  It must describe where `ctaHref` in Pricing.tsx actually sends them —
+   *  while signups are invite-only that is a booking link on every tier, not a
+   *  checkout, so no label here may promise a trial. The 14-day trial is real
+   *  and is stated as prose further down the section, where it isn't a
+   *  destination. */
   cta: string;
   featured?: boolean;
   /** Headline limits, surfaced on the card so the metered bits aren't a surprise. */
@@ -27,7 +33,7 @@ export const PLANS: Plan[] = [
     monthly: 19,
     annual: 15,
     unit: "per seat / month",
-    cta: "Start free trial",
+    cta: "Request access",
     highlights: [
       "1 mailbox",
       "5 bot-hours a month",
@@ -41,7 +47,7 @@ export const PLANS: Plan[] = [
     monthly: 39,
     annual: 29,
     unit: "per seat / month",
-    cta: "Start 7-day Pro trial",
+    cta: "Request access",
     featured: true,
     highlights: [
       "1 mailbox",

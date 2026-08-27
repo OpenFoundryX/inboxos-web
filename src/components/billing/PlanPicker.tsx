@@ -13,7 +13,13 @@ type Interval = "monthly" | "annual";
  *  can't drift on copy or checkout behaviour. */
 export default function PlanPicker() {
   const [plans, setPlans] = useState<BillingPlan[]>([]);
-  const [trialDays, setTrialDays] = useState(7);
+  // Null until `/billing/plans` answers, and it stays null if that call fails.
+  // Seeding a number here would put a specific promise ("N days free") in front
+  // of every visitor before the API had said anything, and permanently in front
+  // of anyone whose fetch failed — a length is a term of sale, so the API is the
+  // only thing allowed to state one. The copy below omits the claim rather than
+  // guessing at it.
+  const [trialDays, setTrialDays] = useState<number | null>(null);
   // Defaults to available so there's no false "you'll be charged now" flash
   // before `getSubscription` resolves — a brand-new signup (no row yet) is
   // always trial-eligible, and that's who hits this default most often.
@@ -26,7 +32,10 @@ export default function PlanPicker() {
     getPlans()
       .then((body) => {
         setPlans(body.plans);
-        setTrialDays(body.trial_days);
+        // The response type is an unchecked cast over JSON, so a missing
+        // `trial_days` would otherwise interpolate as "Start undefined-day
+        // trial". Absent stays absent.
+        setTrialDays(typeof body.trial_days === "number" ? body.trial_days : null);
       })
       .catch(() => setPlans([]));
     // Churned users land here too (`SubscribeBanner` routes them straight to
@@ -39,14 +48,19 @@ export default function PlanPicker() {
       .catch(() => {});
   }, []);
 
+  // Three states, not two: trialing with a known length, trialing with the
+  // length not yet known, and not trialing at all. The middle one says nothing
+  // about free days — a blank line for a moment beats a wrong number.
+  const intro = !trialAvailable
+    ? "You'll be charged for your selected plan as soon as checkout completes."
+    : trialDays !== null
+      ? `${trialDays} days free on first checkout. Cancel any time before then and you won't be charged.`
+      : null;
+
   return (
     <div className="mx-auto max-w-3xl">
       <h1 className="text-xl font-bold text-ink">Choose your plan</h1>
-      <p className="mt-1 text-sm text-ink/60">
-        {trialAvailable
-          ? `${trialDays} days free on first checkout. Cancel any time before then and you won't be charged.`
-          : "You'll be charged for your selected plan as soon as checkout completes."}
-      </p>
+      {intro && <p className="mt-1 text-sm text-ink/60">{intro}</p>}
 
       <div className="mt-6 flex gap-2">
         {(["monthly", "annual"] as Interval[]).map((value) => (
@@ -102,9 +116,11 @@ export default function PlanPicker() {
               >
                 {busy === plan.id
                   ? "Opening checkout…"
-                  : trialAvailable
-                    ? `Start ${trialDays}-day trial`
-                    : "Subscribe"}
+                  : !trialAvailable
+                    ? "Subscribe"
+                    : trialDays !== null
+                      ? `Start ${trialDays}-day trial`
+                      : "Start trial"}
               </Button>
             </Card>
           );

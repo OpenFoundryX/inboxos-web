@@ -1,15 +1,18 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import Wordmark from "@/components/ui/Wordmark";
 import { signIn, isOnboarded } from "@/lib/auth";
 import { backendConfigured, startGoogleLogin } from "@/lib/session";
+import { LEGAL } from "@/lib/legal";
 
-export default function LoginPage() {
+function LoginPageContent() {
   const router = useRouter();
   const configured = backendConfigured();
+  const notInvited = useSearchParams().get("error") === "not_invited";
 
   function mockSignIn() {
     signIn();
@@ -31,6 +34,15 @@ export default function LoginPage() {
         <p className="mt-2 text-sm leading-relaxed text-ink/60">
           Sign in to pick up where your inbox left off.
         </p>
+        {notInvited && (
+          <p className="mt-4 rounded-lg bg-ink/5 p-3 text-sm leading-relaxed text-ink/70">
+            InboxPilot is invite-only while we onboard our first users.{" "}
+            <a href={LEGAL.bookingUrl} target="_blank" rel="noreferrer noopener" className="underline">
+              Book a call
+            </a>{" "}
+            and we&apos;ll get you set up.
+          </p>
+        )}
         <div className="mt-8 space-y-3">
           <Button variant="dark" onClick={handleGoogle} className="w-full">
             Continue with Google
@@ -48,5 +60,13 @@ export default function LoginPage() {
         </p>
       </Card>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginPageContent />
+    </Suspense>
   );
 }

@@ -12,18 +12,24 @@ import {
 
 type Period = "annual" | "monthly";
 
-/** Starter and Pro are the only tiers `POST /billing/checkout` knows about —
- *  Team and Enterprise are per-seat, pooled-quota tiers with no workspace/org
+/** Team and Enterprise are per-seat, pooled-quota tiers with no workspace/org
  *  model in the codebase (see the billing spec's scope), so their CTA can't
- *  be the same `/login` -> onboarding -> Checkout path without landing a buyer
- *  on a dashboard that only offers the two tiers they didn't click. A mailto
- *  keeps the promise "talk to us" actually makes, rather than routing them
- *  into a sign-up flow that has nothing to sell them. */
+ *  be a `/login` -> onboarding -> Checkout path without landing a buyer on a
+ *  dashboard that only offers the two tiers they didn't click. A mailto keeps
+ *  the promise "talk to us" actually makes, rather than routing them into a
+ *  sign-up flow that has nothing to sell them.
+ *
+ *  Starter and Pro used to route through `/login` -> onboarding -> Checkout.
+ *  Signups are invite-only now: the OAuth callback refuses anyone without an
+ *  invite and bounces them back to `/login?error=not_invited`, so a plan CTA
+ *  landing on a refused login is worse than one landing on a real
+ *  conversation. Both tiers now go to the same booking link as the rest of
+ *  the site's acquisition CTAs. */
 function ctaHref(plan: Plan): string {
   if (plan.id === "team" || plan.id === "enterprise") {
     return `mailto:${LEGAL.salesEmail}?subject=${encodeURIComponent(`InboxOS ${plan.name}`)}`;
   }
-  return "/login";
+  return LEGAL.bookingUrl;
 }
 
 function BillingToggle({
@@ -128,6 +134,7 @@ export default function Pricing() {
             <Button
               variant={plan.featured ? "primary" : "outline"}
               href={ctaHref(plan)}
+              external
               className="mt-6 w-full"
             >
               {plan.cta}
@@ -148,7 +155,7 @@ export default function Pricing() {
       </div>
 
       <p className="mt-8 text-center text-sm text-ink/50">
-        The Pro trial runs 7 days with Pro&apos;s full 15 bot-hours included,
+        The Pro trial runs 14 days with Pro&apos;s full 15 bot-hours included,
         card required up front, once per customer. Outlook is still in
         development and isn&apos;t billed on any plan yet.
       </p>
